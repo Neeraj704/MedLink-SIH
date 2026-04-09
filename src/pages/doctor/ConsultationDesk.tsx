@@ -260,9 +260,44 @@ export default function ConsultationDesk() {
     });
   };
 
+  const formatABHA = (value: string) => {
+    const cleaned = value.replace(/\D/g, '').slice(0, 14);
+    const groups = cleaned.match(/.{1,2}/g) || [];
+    if (groups.length > 1) {
+      const first = groups[0];
+      const rest = cleaned.slice(2).match(/.{1,4}/g) || [];
+      return [first, ...rest].join("-");
+    }
+    return cleaned;
+  };
+
+  const formatAadhaar = (value: string) => {
+    const cleaned = value.replace(/\D/g, '').slice(0, 12);
+    return cleaned.match(/.{1,4}/g)?.join(" ") || cleaned;
+  };
+
+  const formatPhone = (value: string) => {
+    const cleaned = value.replace(/\D/g, '');
+    if (cleaned.startsWith('91')) {
+      const rest = cleaned.slice(2, 12);
+      return `+91 ${rest}`;
+    }
+    return `+91 ${cleaned.slice(0, 10)}`;
+  };
+
   const updateIdentifier = (i: number, field: "type" | "value", val: string) => {
     const updated = [...patientInfo.identifiers];
-    updated[i][field] = val;
+    const type = field === "type" ? val : updated[i].type;
+    let finalVal = field === "value" ? val : updated[i].value;
+
+    if (field === "value" || field === "type") {
+      if (type === "ABHA") finalVal = formatABHA(finalVal);
+      else if (type === "Aadhaar") finalVal = formatAadhaar(finalVal);
+      else if (type === "Phone") finalVal = formatPhone(finalVal);
+    }
+
+    updated[i].type = type;
+    updated[i].value = finalVal;
     setPatientInfo({ ...patientInfo, identifiers: updated });
   };
 
@@ -274,10 +309,43 @@ export default function ConsultationDesk() {
   };
 
   const handleSavePatient = () => {
-    if (!patientInfo.name || patientInfo.identifiers.some(id => !id.value)) {
-      toast.error("Please fill in patient name and all identifier values");
+    if (!patientInfo.name.trim()) {
+      toast.error("Patient name is required");
       return;
     }
+    
+    if (patientInfo.identifiers.length === 0) {
+      toast.error("At least one identifier is required");
+      return;
+    }
+
+    for (const id of patientInfo.identifiers) {
+      if (!id.value.trim()) {
+        toast.error(`Value for ${id.type} is required`);
+        return;
+      }
+      
+      if (id.type === "Gmail" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(id.value)) {
+        toast.error("Please enter a valid Gmail/Email address");
+        return;
+      }
+      
+      if (id.type === "ABHA" && id.value.replace(/\D/g, '').length < 14) {
+        toast.error("ABHA number must be 14 digits");
+        return;
+      }
+
+      if (id.type === "Aadhaar" && id.value.replace(/\D/g, '').length < 12) {
+        toast.error("Aadhaar number must be 12 digits");
+        return;
+      }
+      
+      if (id.type === "Phone" && id.value.replace(/\D/g, '').length < 12) { // 91 + 10 digits
+        toast.error("Phone number must be 10 digits");
+        return;
+      }
+    }
+
     setIsPatientSet(true);
     setShowPatientDialog(false);
     toast.success("Patient details set successfully");
