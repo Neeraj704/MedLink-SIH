@@ -82,7 +82,7 @@ export default function AuthPage() {
           toast.success("Verified successfully!");
           navigate(role === "doctor" ? "/doctor" : "/patient");
         } else {
-          toast.error("Invalid OTP. Use 123123");
+          toast.error("Invalid OTP. Use 587315");
           setOtp(["", "", "", "", "", ""]);
           otpRefs.current[0]?.focus();
         }
@@ -370,7 +370,7 @@ export default function AuthPage() {
                 <p className="text-xs text-muted-foreground text-center mt-6">
                   Hint: Use{" "}
                   <span className="font-mono font-semibold text-foreground">
-                    123123
+                    587315
                   </span>{" "}
                   to verify
                 </p>

@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const verifyOtp = useCallback((otp: string): boolean => {
-    if (otp === '123123' && pendingAuth) {
+    if (otp === '587315' && pendingAuth) {
       const nameMap: Record<string, string> = {
         gmail: 'Dr. Sharma',
         hpr: 'Dr. Patel',
