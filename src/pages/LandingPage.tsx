@@ -231,7 +231,7 @@ export default function LandingPage() {
                 Sign Up Free
               </Button>
             </Link>
-            <Button size="lg" variant="outline" className="text-base px-8 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
+            <Button size="lg" variant="secondary" className="text-base px-8">
               Download Whitepaper
             </Button>
           </div>

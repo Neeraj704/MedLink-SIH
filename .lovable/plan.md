@@ -25,7 +25,7 @@ A comprehensive, premium medical platform with Doctor and Patient portals, featu
 - Split-screen role selection: Doctor / Patient toggle
 - **Doctor login:** Gmail OAuth button + HPR ID input with "Request OTP" button
 - **Patient login:** ABHA ID input + Aadhaar ID input with "Request OTP" button
-- 6-digit OTP input with auto-focus, auto-tab, and hardcoded bypass (123123 = success)
+- 6-digit OTP input with auto-focus, auto-tab, and hardcoded bypass (587315 = success)
 - Resend OTP countdown timer (45s)
 - Eye icon toggle for ID visibility, "Forgot ID" recovery UI
 - Role stored in app state for conditional routing
