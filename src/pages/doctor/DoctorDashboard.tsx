@@ -4,6 +4,7 @@ import {
   Users, FileText, Clock, Activity, TrendingUp, 
   Plus, Search, ArrowUpRight 
 } from 'lucide-react';
+import { formatPhone, formatAadhaar, formatAbhaHpr } from '@/lib/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -90,7 +91,17 @@ export default function DoctorDashboard() {
                   <SelectItem value="phone">Phone Number</SelectItem>
                 </SelectContent>
               </Select>
-              <Input placeholder="Enter patient identifier" value={linkId} onChange={e => setLinkId(e.target.value)} />
+              <Input 
+                placeholder="Enter patient identifier" 
+                value={linkId} 
+                onChange={e => {
+                  let val = e.target.value;
+                  if (linkMethod === 'phone') val = formatPhone(val);
+                  else if (linkMethod === 'aadhaar') val = formatAadhaar(val);
+                  else if (linkMethod === 'abha') val = formatAbhaHpr(val);
+                  setLinkId(val);
+                }} 
+              />
               <Button onClick={handleLinkPatient} className="w-full">Link Patient</Button>
             </div>
           </DialogContent>
