@@ -74,7 +74,7 @@ export default function PatientProfile() {
                 <label className="text-sm font-medium mb-1 block">
                   Full Name
                 </label>
-                <Input defaultValue={user?.name || "Rahul Kumar"} />
+                <Input defaultValue={user?.name || "Rahul Sharma"} />
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">Email</label>
