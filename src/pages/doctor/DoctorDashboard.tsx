@@ -1,70 +1,141 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  Users, FileText, Clock, Activity, TrendingUp, 
-  Plus, Search, ArrowUpRight 
-} from 'lucide-react';
-import { formatPhone, formatAadhaar, formatAbhaHpr } from '@/lib/formatters';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/contexts/AuthContext';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import {
+  Users,
+  FileText,
+  Clock,
+  Activity,
+  TrendingUp,
+  Plus,
+  Search,
+  ArrowUpRight,
+} from "lucide-react";
+import { formatPhone, formatAadhaar, formatAbhaHpr } from "@/lib/formatters";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "sonner";
 
 const stats = [
-  { label: 'Patients Today', value: '12', icon: Users, trend: '+3' },
-  { label: 'Pending FHIR', value: '4', icon: FileText, trend: '-1' },
-  { label: 'Avg. Consult Time', value: '18m', icon: Clock, trend: '-2m' },
-  { label: 'Compliance Rate', value: '96%', icon: TrendingUp, trend: '+1%' },
+  { label: "Patients Today", value: "12", icon: Users, trend: "+3" },
+  { label: "Pending FHIR", value: "4", icon: FileText, trend: "-1" },
+  { label: "Avg. Consult Time", value: "18m", icon: Clock, trend: "-2m" },
+  { label: "Compliance Rate", value: "96%", icon: TrendingUp, trend: "+1%" },
 ];
 
 const recentPatients = [
-  { name: 'Rahul Kumar', id: 'ABHA-1234-5678', time: '10:30 AM', status: 'Completed' },
-  { name: 'Priya Singh', id: 'ABHA-2345-6789', time: '11:15 AM', status: 'In Progress' },
-  { name: 'Amit Verma', id: 'ABHA-3456-7890', time: '12:00 PM', status: 'Pending' },
-  { name: 'Sneha Patel', id: 'ABHA-4567-8901', time: '2:30 PM', status: 'Scheduled' },
+  {
+    name: "Rahul Sharma",
+    id: "ABHA-1234-5678",
+    time: "10:30 AM",
+    status: "Completed",
+  },
+  {
+    name: "Priya Singh",
+    id: "ABHA-2345-6789",
+    time: "11:15 AM",
+    status: "In Progress",
+  },
+  {
+    name: "Amit Verma",
+    id: "ABHA-3456-7890",
+    time: "12:00 PM",
+    status: "Pending",
+  },
+  {
+    name: "Sneha Patel",
+    id: "ABHA-4567-8901",
+    time: "2:30 PM",
+    status: "Scheduled",
+  },
 ];
 
 export default function DoctorDashboard() {
   const { user } = useAuth();
-  const [linkMethod, setLinkMethod] = useState('');
-  const [linkId, setLinkId] = useState('');
+  const [linkMethod, setLinkMethod] = useState("");
+  const [linkId, setLinkId] = useState("");
   const now = new Date();
 
   const handleLinkPatient = () => {
-    if (!linkId.trim()) { toast.error('Enter patient identifier'); return; }
+    if (!linkId.trim()) {
+      toast.error("Enter patient identifier");
+      return;
+    }
     toast.success(`Patient linked via ${linkMethod}: ${linkId}`);
-    setLinkId('');
+    setLinkId("");
   };
 
   return (
     <div className="space-y-6">
       {/* Greeting */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-2xl font-bold">Good {now.getHours() < 12 ? 'Morning' : now.getHours() < 17 ? 'Afternoon' : 'Evening'}, {user?.name || 'Doctor'}</h1>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <h1 className="text-2xl font-bold">
+          Good{" "}
+          {now.getHours() < 12
+            ? "Morning"
+            : now.getHours() < 17
+              ? "Afternoon"
+              : "Evening"}
+          , {user?.name || "Doctor"}
+        </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          {now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} • {now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+          {now.toLocaleDateString("en-IN", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}{" "}
+          •{" "}
+          {now.toLocaleTimeString("en-IN", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
         </p>
       </motion.div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, i) => (
-          <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+          >
             <Card className="card-hover">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-3">
                   <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center">
                     <stat.icon className="w-4 h-4 text-accent-foreground" />
                   </div>
-                  <Badge variant="secondary" className="text-xs">{stat.trend}</Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    {stat.trend}
+                  </Badge>
                 </div>
                 <div className="text-2xl font-bold">{stat.value}</div>
-                <div className="text-xs text-muted-foreground mt-0.5">{stat.label}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  {stat.label}
+                </div>
               </CardContent>
             </Card>
           </motion.div>
@@ -75,7 +146,9 @@ export default function DoctorDashboard() {
       <div className="flex flex-col sm:flex-row gap-3">
         <Dialog>
           <DialogTrigger asChild>
-            <Button><Plus className="w-4 h-4 mr-2" /> Link New Patient</Button>
+            <Button>
+              <Plus className="w-4 h-4 mr-2" /> Link New Patient
+            </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -83,7 +156,9 @@ export default function DoctorDashboard() {
             </DialogHeader>
             <div className="space-y-4 pt-2">
               <Select value={linkMethod} onValueChange={setLinkMethod}>
-                <SelectTrigger><SelectValue placeholder="Select identifier type" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select identifier type" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="abha">ABHA ID</SelectItem>
                   <SelectItem value="aadhaar">Aadhaar</SelectItem>
@@ -91,23 +166,27 @@ export default function DoctorDashboard() {
                   <SelectItem value="phone">Phone Number</SelectItem>
                 </SelectContent>
               </Select>
-              <Input 
-                placeholder="Enter patient identifier" 
-                value={linkId} 
-                onChange={e => {
+              <Input
+                placeholder="Enter patient identifier"
+                value={linkId}
+                onChange={(e) => {
                   let val = e.target.value;
-                  if (linkMethod === 'phone') val = formatPhone(val);
-                  else if (linkMethod === 'aadhaar') val = formatAadhaar(val);
-                  else if (linkMethod === 'abha') val = formatAbhaHpr(val);
+                  if (linkMethod === "phone") val = formatPhone(val);
+                  else if (linkMethod === "aadhaar") val = formatAadhaar(val);
+                  else if (linkMethod === "abha") val = formatAbhaHpr(val);
                   setLinkId(val);
-                }} 
+                }}
               />
-              <Button onClick={handleLinkPatient} className="w-full">Link Patient</Button>
+              <Button onClick={handleLinkPatient} className="w-full">
+                Link Patient
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
         <Button variant="outline" asChild>
-          <a href="/doctor/consultation"><FileText className="w-4 h-4 mr-2" /> New Consultation</a>
+          <a href="/doctor/consultation">
+            <FileText className="w-4 h-4 mr-2" /> New Consultation
+          </a>
         </Button>
       </div>
 
@@ -116,7 +195,9 @@ export default function DoctorDashboard() {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">Recent Patients</CardTitle>
-            <Button variant="ghost" size="sm" className="text-xs">View All <ArrowUpRight className="w-3 h-3 ml-1" /></Button>
+            <Button variant="ghost" size="sm" className="text-xs">
+              View All <ArrowUpRight className="w-3 h-3 ml-1" />
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -125,19 +206,35 @@ export default function DoctorDashboard() {
               <thead>
                 <tr className="border-b text-muted-foreground">
                   <th className="text-left py-3 font-medium">Patient</th>
-                  <th className="text-left py-3 font-medium hidden sm:table-cell">ID</th>
+                  <th className="text-left py-3 font-medium hidden sm:table-cell">
+                    ID
+                  </th>
                   <th className="text-left py-3 font-medium">Time</th>
                   <th className="text-left py-3 font-medium">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {recentPatients.map((p, i) => (
-                  <tr key={i} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
+                  <tr
+                    key={i}
+                    className="border-b last:border-0 hover:bg-muted/50 transition-colors"
+                  >
                     <td className="py-3 font-medium">{p.name}</td>
-                    <td className="py-3 text-muted-foreground hidden sm:table-cell font-mono text-xs">{p.id}</td>
+                    <td className="py-3 text-muted-foreground hidden sm:table-cell font-mono text-xs">
+                      {p.id}
+                    </td>
                     <td className="py-3 text-muted-foreground">{p.time}</td>
                     <td className="py-3">
-                      <Badge variant={p.status === 'Completed' ? 'default' : p.status === 'In Progress' ? 'secondary' : 'outline'} className="text-xs">
+                      <Badge
+                        variant={
+                          p.status === "Completed"
+                            ? "default"
+                            : p.status === "In Progress"
+                              ? "secondary"
+                              : "outline"
+                        }
+                        className="text-xs"
+                      >
                         {p.status}
                       </Badge>
                     </td>
