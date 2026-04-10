@@ -138,6 +138,7 @@ function saveChats(chats: Chat[]) {
 
 function searchDiseaseData(data: DiseaseRow[], query: string): DiseaseRow[] {
   const q = query.toLowerCase();
+  
   return data
     .filter(
       (r) =>
@@ -147,6 +148,26 @@ function searchDiseaseData(data: DiseaseRow[], query: string): DiseaseRow[] {
         r.Siddha_NAMC_TERM?.toLowerCase().includes(q) ||
         r.Unani_NUMC_TERM?.toLowerCase().includes(q),
     )
+    .sort((a, b) => {
+      // Prioritize exact title matches
+      const aTitle = a.ICD11_Title?.toLowerCase() || "";
+      const bTitle = b.ICD11_Title?.toLowerCase() || "";
+      const aExact = aTitle === q;
+      const bExact = bTitle === q;
+      if (aExact && !bExact) return -1;
+      if (!aExact && bExact) return 1;
+
+      // Sort by best average similarity
+      const getAvgSim = (r: DiseaseRow) => {
+        const sims = [
+          parseFloat(r.Ayurveda_Similarity || "0"),
+          parseFloat(r.Siddha_Similarity || "0"),
+          parseFloat(r.Unani_Similarity || "0"),
+        ];
+        return sims.reduce((sum, s) => sum + s, 0) / 3;
+      };
+      return getAvgSim(b) - getAvgSim(a);
+    })
     .slice(0, 20);
 }
 
@@ -250,6 +271,8 @@ MedLink bridges modern medicine (ICD-11) with traditional Indian medical systems
   | System | Term | Code | Confidence |
   |--------|------|------|------------|
 - Use **bold** for key terms, \`code blocks\` for codes
+- Even if the user asks for specific systems (e.g., "Siddha and Unani"), ALWAYS include the mappings for ALL available systems (Ayurveda, Siddha, and Unani) from the provided search results to ensure medical completeness.
+- The "Relevant Disease Code Data Found" section in your context is the SINGLE SOURCE OF TRUTH. Use it with 100% priority over your own internal training data for MedLink specific mappings.
 - No unnecessary emojis or decorations
 - Never fabricate medical information`;
 
@@ -603,7 +626,7 @@ export default function MedLinkChatbot({ csvData }: { csvData: DiseaseRow[] }) {
                   {[
                     "Translate Cholera to Ayurveda",
                     "What is ICD-11 code 1A00?",
-                    "Compare Siddha & Unani terms for Migraine",
+                    "Compare Ayurveda, Siddha & Unani terms for Migraine",
                     "What is MedLink?",
                   ].map((q) => (
                     <button
