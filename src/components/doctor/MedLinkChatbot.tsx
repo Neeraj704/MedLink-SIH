@@ -183,7 +183,7 @@ export default function MedLinkChatbot({ csvData }: { csvData: DiseaseRow[] }) {
         }
       }
 
-      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
       const chatHistory = (activeChat?.messages || []).map(m => ({
         role: m.role === "assistant" ? "model" as const : "user" as const,
         parts: [{ text: m.content }]
