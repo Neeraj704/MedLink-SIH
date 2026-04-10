@@ -7,7 +7,7 @@ import { useState } from "react";
 
 const patients = [
   {
-    name: "Rahul Sharma",
+    name: "Walter White",
     id: "ABHA-1234-5678",
     lastVisit: "2026-04-09",
     diagnoses: ["Gastroenteritis"],

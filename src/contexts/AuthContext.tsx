@@ -44,8 +44,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const nameMap: Record<string, string> = {
           gmail: "Dr. Sharma",
           hpr: "Dr. Patel",
-          abha: "Rahul Sharma",
-          aadhaar: "Rahul Sharma",
+          abha: "Walter White",
+          aadhaar: "Walter White",
         };
         setUser({
           id: crypto.randomUUID(),
