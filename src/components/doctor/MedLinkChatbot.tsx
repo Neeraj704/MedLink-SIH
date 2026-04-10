@@ -5,7 +5,8 @@ import remarkGfm from "remark-gfm";
 import Papa from "papaparse";
 import {
   MessageSquare, Send, Plus, Trash2, X, Bot, User,
-  Clock, Sparkles, MoreHorizontal, ChevronLeft, Loader2, Zap
+  Clock, Sparkles, MoreHorizontal, ChevronLeft, Loader2, Zap, ChevronDown,
+  Gauge, FileText, List, BookOpen, ScrollText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +45,24 @@ interface DiseaseRow {
   Unani_Similarity: string;
 }
 
+type ResponseMode = "code-only" | "concise" | "default" | "detailed" | "full-detail";
+
+const RESPONSE_MODES: { value: ResponseMode; label: string; icon: any; description: string }[] = [
+  { value: "code-only", label: "Code Only", icon: List, description: "Table of codes only" },
+  { value: "concise", label: "Concise", icon: Gauge, description: "Brief with key info" },
+  { value: "default", label: "Default", icon: FileText, description: "Balanced response" },
+  { value: "detailed", label: "Detailed", icon: BookOpen, description: "Thorough explanation" },
+  { value: "full-detail", label: "Full Detail", icon: ScrollText, description: "Complete analysis" },
+];
+
+const MODE_INSTRUCTIONS: Record<ResponseMode, string> = {
+  "code-only": `\n\n## RESPONSE MODE: CODE ONLY\nYou MUST respond with ONLY a markdown table of code mappings. No explanations, no headers, no extra text, no emojis. Just the table:\n| System | Term | Code | Confidence |\n|--------|------|------|------------|\nNothing else. If the query is not about a disease/code, respond with a single line: "❌ Not a medical coding query."`,
+  "concise": `\n\n## RESPONSE MODE: CONCISE\nKeep your response to 2-3 sentences max plus the code mapping table if applicable. No emojis, no workflow tips, no clinical interpretations. Be extremely brief.`,
+  "default": `\n\n## RESPONSE MODE: DEFAULT\nProvide a balanced response. Include the code mapping table, a 1-2 sentence explanation, and one brief clinical note if relevant. Keep total response under 150 words.`,
+  "detailed": `\n\n## RESPONSE MODE: DETAILED\nProvide a thorough response with the code mapping table, clinical interpretation, and relevant context. Include cross-system comparisons and workflow tips.`,
+  "full-detail": `\n\n## RESPONSE MODE: FULL DETAIL\nProvide a comprehensive analysis. Include all code mappings, detailed clinical interpretation, historical context of traditional medicine terms, cross-system comparisons, confidence score analysis, and MedLink workflow guidance.`,
+};
+
 const STORAGE_KEY = "medlink-chats";
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || "");
 
@@ -80,32 +99,30 @@ function extractSearchTerms(text: string): string[] {
 
 const SYSTEM_PROMPT = `You are MedLink AI — an expert medical coding assistant embedded in the MedLink Hospital Management Platform.
 
+## STRICT SCOPE RULES
+- You ONLY answer questions related to: medical coding (ICD-11, AYUSH), disease terminology, MedLink platform features, and clinical workflows.
+- If a user asks about ANYTHING outside medicine/healthcare (cooking, sports, entertainment, programming, weather, etc.), respond ONLY with:
+  "❌ I'm MedLink AI, a medical coding assistant. I can only help with disease codes, ICD-11/AYUSH translations, and MedLink platform queries. Please ask a medical coding question."
+- Do NOT try to relate non-medical queries to medical codes. Do NOT be creative about finding medical angles for non-medical topics.
+- This rule is ABSOLUTE and overrides all other instructions.
+
 ## About MedLink
-MedLink is a comprehensive Hospital Management and Patient Portal platform that bridges modern medicine (ICD-11) with traditional Indian medical systems (Ayurveda, Siddha, Unani — collectively called AYUSH). It features:
-- Disease Code Translation: Maps ICD-11 codes to Ayurveda (NAMC), Siddha (NAMC), and Unani (NUMC) terminology
-- FHIR R4 encoding for interoperability
-- Doctor consultation workflow (vitals, diagnosis, prescriptions)
-- Patient portal with medical records, prescriptions, and doctor search
-- 36,782 disease code mappings in the database
+MedLink bridges modern medicine (ICD-11) with traditional Indian medical systems (Ayurveda, Siddha, Unani — AYUSH). 36,782 disease code mappings.
 
-## Your Capabilities
-- Translate between ICD-11 and AYUSH codes (Ayurveda, Siddha, Unani)
-- Explain diseases, their traditional medicine equivalents, and confidence scores
-- Help doctors understand code mappings and medical terminology
-- Answer questions about MedLink features and workflows
+## Capabilities
+- Translate between ICD-11 and AYUSH codes
+- Explain diseases and their traditional medicine equivalents
 - Provide clinical coding guidance
+- Answer MedLink platform questions
 
-## Response Format Rules
-- Use **bold** for important terms and code names
-- Use tables when comparing multiple codes or systems
-- Use bullet points for lists
-- Use code blocks for ICD/AYUSH codes: \`1A00\`
-- When showing disease mappings, ALWAYS use this table format:
+## Response Rules
+- Be concise. Save tokens. Avoid unnecessary elaboration.
+- Use the mapping table format when showing codes:
   | System | Term | Code | Confidence |
   |--------|------|------|------------|
-- Keep responses concise but thorough
-- Use emojis sparingly for visual clarity (🏥 ⚕️ 🔬 💊 📋)
-- When unsure, say so — never fabricate medical information`;
+- Use **bold** for key terms, \`code blocks\` for codes
+- No unnecessary emojis or decorations
+- Never fabricate medical information`;
 
 export default function MedLinkChatbot({ csvData }: { csvData: DiseaseRow[] }) {
   const [chats, setChats] = useState<Chat[]>(loadChats);
@@ -113,6 +130,8 @@ export default function MedLinkChatbot({ csvData }: { csvData: DiseaseRow[] }) {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [responseMode, setResponseMode] = useState<ResponseMode>("default");
+  const [showModeMenu, setShowModeMenu] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -189,10 +208,11 @@ export default function MedLinkChatbot({ csvData }: { csvData: DiseaseRow[] }) {
         parts: [{ text: m.content }]
       }));
 
+      const modeInstruction = MODE_INSTRUCTIONS[responseMode];
       const chat = model.startChat({
         history: [
-          { role: "user", parts: [{ text: "System instructions: " + SYSTEM_PROMPT }] },
-          { role: "model", parts: [{ text: "Understood. I'm MedLink AI, ready to help with disease code translation, AYUSH mappings, and medical coding queries. How can I assist you?" }] },
+          { role: "user", parts: [{ text: "System instructions: " + SYSTEM_PROMPT + modeInstruction }] },
+          { role: "model", parts: [{ text: "Understood. I'm MedLink AI, ready to help with disease code translation, AYUSH mappings, and medical coding queries." }] },
           ...chatHistory
         ]
       });
@@ -243,7 +263,7 @@ export default function MedLinkChatbot({ csvData }: { csvData: DiseaseRow[] }) {
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, activeChatId, activeChat, csvData]);
+  }, [input, isLoading, activeChatId, activeChat, csvData, responseMode]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -396,13 +416,11 @@ export default function MedLinkChatbot({ csvData }: { csvData: DiseaseRow[] }) {
                     {msg.role === "user" ? (
                       <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                     ) : (
-                      <div className="prose prose-sm dark:prose-invert max-w-none text-sm
+                      <div className="medlink-chat-prose medlink-chat-scroll prose prose-sm dark:prose-invert max-w-none text-sm
                         prose-headings:text-foreground prose-headings:font-semibold prose-headings:mt-3 prose-headings:mb-1
                         prose-p:my-1.5 prose-p:leading-relaxed
                         prose-ul:my-1.5 prose-ol:my-1.5
                         prose-li:my-0.5
-                        prose-table:my-2 prose-th:px-3 prose-th:py-1.5 prose-th:text-xs prose-th:font-semibold prose-th:bg-muted prose-th:border-border
-                        prose-td:px-3 prose-td:py-1.5 prose-td:text-xs prose-td:border-border
                         prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-code:font-mono
                         prose-pre:bg-muted prose-pre:rounded-lg prose-pre:p-3
                         prose-strong:text-foreground
@@ -453,6 +471,55 @@ export default function MedLinkChatbot({ csvData }: { csvData: DiseaseRow[] }) {
                 t.style.height = Math.min(t.scrollHeight, 120) + "px";
               }}
             />
+            {/* Response Mode Selector */}
+            <div className="relative">
+              <button
+                onClick={() => setShowModeMenu(!showModeMenu)}
+                className="h-10 px-2.5 rounded-xl border border-border bg-muted/30 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors shrink-0"
+                title="Response Type"
+              >
+                {(() => {
+                  const mode = RESPONSE_MODES.find(m => m.value === responseMode);
+                  const Icon = mode?.icon || FileText;
+                  return <Icon className="w-3.5 h-3.5" />;
+                })()}
+                <span className="hidden sm:inline max-w-[70px] truncate">
+                  {RESPONSE_MODES.find(m => m.value === responseMode)?.label}
+                </span>
+                <ChevronDown className="w-3 h-3" />
+              </button>
+              {showModeMenu && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowModeMenu(false)} />
+                  <div className="absolute bottom-12 right-0 z-50 w-52 rounded-xl border border-border bg-background shadow-xl p-1.5 space-y-0.5">
+                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-2 py-1">Response Type</p>
+                    {RESPONSE_MODES.map(mode => {
+                      const Icon = mode.icon;
+                      return (
+                        <button
+                          key={mode.value}
+                          onClick={() => { setResponseMode(mode.value); setShowModeMenu(false); }}
+                          className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs transition-colors ${
+                            responseMode === mode.value
+                              ? "bg-primary/10 text-primary font-medium"
+                              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                          }`}
+                        >
+                          <Icon className="w-3.5 h-3.5 shrink-0" />
+                          <div className="text-left">
+                            <div>{mode.label}</div>
+                            <div className="text-[10px] opacity-70">{mode.description}</div>
+                          </div>
+                          {responseMode === mode.value && (
+                            <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
             <Button
               size="icon"
               className="h-10 w-10 rounded-xl shrink-0"
@@ -463,7 +530,7 @@ export default function MedLinkChatbot({ csvData }: { csvData: DiseaseRow[] }) {
             </Button>
           </div>
           <p className="text-[10px] text-muted-foreground text-center mt-2">
-            MedLink AI • {csvData.length.toLocaleString()} disease codes loaded
+            MedLink AI • {csvData.length.toLocaleString()} codes • {RESPONSE_MODES.find(m => m.value === responseMode)?.label} mode
           </p>
         </div>
       </div>
