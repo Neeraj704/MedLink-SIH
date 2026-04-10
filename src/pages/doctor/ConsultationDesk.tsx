@@ -91,13 +91,13 @@ interface PatientInfo {
 }
 
 export default function ConsultationDesk() {
-  const [patientInfo, setPatientInfo] = useState<PatientInfo>({ 
-    name: "", 
-    identifiers: [{ type: "ABHA", value: "" }] 
+  const [patientInfo, setPatientInfo] = useState<PatientInfo>({
+    name: "",
+    identifiers: [{ type: "ABHA", value: "" }],
   });
   const [isPatientSet, setIsPatientSet] = useState(false);
   const [showPatientDialog, setShowPatientDialog] = useState(false);
-  
+
   const [vitals, setVitals] = useState({
     bp: "",
     heartRate: "",
@@ -256,12 +256,12 @@ export default function ConsultationDesk() {
   const addIdentifier = () => {
     setPatientInfo({
       ...patientInfo,
-      identifiers: [...patientInfo.identifiers, { type: "Aadhaar", value: "" }]
+      identifiers: [...patientInfo.identifiers, { type: "Aadhaar", value: "" }],
     });
   };
 
   const formatABHA = (value: string) => {
-    const cleaned = value.replace(/\D/g, '').slice(0, 14);
+    const cleaned = value.replace(/\D/g, "").slice(0, 14);
     const groups = cleaned.match(/.{1,2}/g) || [];
     if (groups.length > 1) {
       const first = groups[0];
@@ -272,20 +272,24 @@ export default function ConsultationDesk() {
   };
 
   const formatAadhaar = (value: string) => {
-    const cleaned = value.replace(/\D/g, '').slice(0, 12);
+    const cleaned = value.replace(/\D/g, "").slice(0, 12);
     return cleaned.match(/.{1,4}/g)?.join(" ") || cleaned;
   };
 
   const formatPhone = (value: string) => {
-    const cleaned = value.replace(/\D/g, '');
-    if (cleaned.startsWith('91')) {
+    const cleaned = value.replace(/\D/g, "");
+    if (cleaned.startsWith("91")) {
       const rest = cleaned.slice(2, 12);
       return `+91 ${rest}`;
     }
     return `+91 ${cleaned.slice(0, 10)}`;
   };
 
-  const updateIdentifier = (i: number, field: "type" | "value", val: string) => {
+  const updateIdentifier = (
+    i: number,
+    field: "type" | "value",
+    val: string,
+  ) => {
     const updated = [...patientInfo.identifiers];
     const type = field === "type" ? val : updated[i].type;
     let finalVal = field === "value" ? val : updated[i].value;
@@ -304,7 +308,7 @@ export default function ConsultationDesk() {
   const removeIdentifier = (i: number) => {
     setPatientInfo({
       ...patientInfo,
-      identifiers: patientInfo.identifiers.filter((_, idx) => idx !== i)
+      identifiers: patientInfo.identifiers.filter((_, idx) => idx !== i),
     });
   };
 
@@ -313,7 +317,7 @@ export default function ConsultationDesk() {
       toast.error("Patient name is required");
       return;
     }
-    
+
     if (patientInfo.identifiers.length === 0) {
       toast.error("At least one identifier is required");
       return;
@@ -324,23 +328,24 @@ export default function ConsultationDesk() {
         toast.error(`Value for ${id.type} is required`);
         return;
       }
-      
+
       if (id.type === "Gmail" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(id.value)) {
         toast.error("Please enter a valid Gmail/Email address");
         return;
       }
-      
-      if (id.type === "ABHA" && id.value.replace(/\D/g, '').length < 14) {
+
+      if (id.type === "ABHA" && id.value.replace(/\D/g, "").length < 14) {
         toast.error("ABHA number must be 14 digits");
         return;
       }
 
-      if (id.type === "Aadhaar" && id.value.replace(/\D/g, '').length < 12) {
+      if (id.type === "Aadhaar" && id.value.replace(/\D/g, "").length < 12) {
         toast.error("Aadhaar number must be 12 digits");
         return;
       }
-      
-      if (id.type === "Phone" && id.value.replace(/\D/g, '').length < 12) { // 91 + 10 digits
+
+      if (id.type === "Phone" && id.value.replace(/\D/g, "").length < 12) {
+        // 91 + 10 digits
         toast.error("Phone number must be 10 digits");
         return;
       }
@@ -375,13 +380,18 @@ export default function ConsultationDesk() {
           fullUrl: patientRef,
           resource: {
             resourceType: "Patient",
-            identifier: patientInfo.identifiers.map(id => ({
-              system: id.type === "ABHA" ? "https://abha.gov.in" : 
-                      id.type === "Aadhaar" ? "https://uidai.gov.in" : 
-                      id.type === "Gmail" ? "https://mail.google.com" : "https://phone.gov.in",
-              value: id.value
+            identifier: patientInfo.identifiers.map((id) => ({
+              system:
+                id.type === "ABHA"
+                  ? "https://abha.gov.in"
+                  : id.type === "Aadhaar"
+                    ? "https://uidai.gov.in"
+                    : id.type === "Gmail"
+                      ? "https://mail.google.com"
+                      : "https://phone.gov.in",
+              value: id.value,
             })),
-            name: [{ text: patientName }]
+            name: [{ text: patientName }],
           },
           request: { method: "PUT", url: `Patient?identifier=${primaryId}` },
         },
@@ -567,14 +577,20 @@ export default function ConsultationDesk() {
         animate={{ opacity: 1, y: 0 }}
       >
         {!isPatientSet ? (
-          <Card className="border-dashed border-2 bg-accent/5 hover:bg-accent/10 transition-all cursor-pointer group" onClick={() => setShowPatientDialog(true)}>
+          <Card
+            className="border-dashed border-2 bg-accent/5 hover:bg-accent/10 transition-all cursor-pointer group"
+            onClick={() => setShowPatientDialog(true)}
+          >
             <CardContent className="p-6 flex flex-col items-center justify-center text-center space-y-3">
               <div className="p-3 rounded-full bg-primary/10 text-primary group-hover:scale-110 transition-transform">
                 <UserPlus className="w-8 h-8" />
               </div>
               <div>
                 <CardTitle className="text-xl">Set Patient Details</CardTitle>
-                <p className="text-muted-foreground text-sm mt-1">Select identifiers and enter patient name to start consultation</p>
+                <p className="text-muted-foreground text-sm mt-1">
+                  Select identifiers and enter patient name to start
+                  consultation
+                </p>
               </div>
               <Button variant="outline" size="sm" className="mt-2">
                 <Plus className="w-4 h-4 mr-2" /> Add Patient Identity
@@ -586,28 +602,56 @@ export default function ConsultationDesk() {
             <CardContent className="p-4 flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg border-2 border-primary/20">
-                  {patientInfo.name.split(" ").map(n => n[0]).join("").toUpperCase() || "UN"}
+                  {patientInfo.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase() || "UN"}
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1.5">
-                    <span className="font-bold text-lg text-foreground">{patientInfo.name}</span>
-                    <Badge variant="secondary" className="bg-primary/10 text-primary border-none text-[10px] h-5 uppercase px-2 font-bold tracking-tight">Active Patient</Badge>
+                    <span className="font-bold text-lg text-foreground">
+                      {patientInfo.name}
+                    </span>
+                    <Badge
+                      variant="secondary"
+                      className="bg-primary/10 text-primary border-none text-[10px] h-5 uppercase px-2 font-bold tracking-tight"
+                    >
+                      Active Patient
+                    </Badge>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {patientInfo.identifiers.map((id, idx) => (
-                      <Badge key={idx} variant="outline" className="text-[10px] h-6 font-mono bg-background/50 flex items-center gap-1.5 border-border/60 py-0 px-2 rounded-md">
+                      <Badge
+                        key={idx}
+                        variant="outline"
+                        className="text-[10px] h-6 font-mono bg-background/50 flex items-center gap-1.5 border-border/60 py-0 px-2 rounded-md"
+                      >
                         <Fingerprint className="w-3.5 h-3.5 opacity-40" />
-                        <span className="opacity-70 font-bold">{id.type}:</span> {id.value}
+                        <span className="opacity-70 font-bold">
+                          {id.type}:
+                        </span>{" "}
+                        {id.value}
                       </Badge>
                     ))}
                   </div>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <Button variant="ghost" size="sm" onClick={() => setShowPatientDialog(true)} className="h-8 text-xs font-medium hover:bg-transparent hover:text-primary transition-colors">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowPatientDialog(true)}
+                  className="h-8 text-xs font-medium hover:bg-transparent hover:text-primary transition-colors"
+                >
                   Change Patient
                 </Button>
-                <Badge variant="outline" className="text-[10px] uppercase font-bold tracking-wider px-3 h-7 bg-emerald-500/5 text-emerald-600 border-emerald-500/20 rounded-full">Active Session</Badge>
+                <Badge
+                  variant="outline"
+                  className="text-[10px] uppercase font-bold tracking-wider px-3 h-7 bg-emerald-500/5 text-emerald-600 border-emerald-500/20 rounded-full"
+                >
+                  Active Session
+                </Badge>
               </div>
             </CardContent>
           </Card>
@@ -1105,32 +1149,40 @@ export default function ConsultationDesk() {
               Patient Registration
             </DialogTitle>
             <DialogDescription>
-              Enter patient identity details. You can add multiple identifiers for ABDM/HL7 compliance.
+              Enter patient identity details. You can add multiple identifiers
+              for ABDM/HL7 compliance.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Full Name</label>
-              <Input 
-                placeholder="e.g., Rahul Sharma" 
+              <Input
+                placeholder="e.g., Walter White"
                 value={patientInfo.name}
-                onChange={(e) => setPatientInfo({ ...patientInfo, name: e.target.value })}
+                onChange={(e) =>
+                  setPatientInfo({ ...patientInfo, name: e.target.value })
+                }
               />
             </div>
-            
+
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium">Identifiers</label>
-                <Button variant="ghost" size="sm" onClick={addIdentifier} className="h-7 text-xs">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={addIdentifier}
+                  className="h-7 text-xs"
+                >
                   <Plus className="w-3 h-3 mr-1" /> Add ID
                 </Button>
               </div>
-              
+
               {patientInfo.identifiers.map((id, i) => (
                 <div key={i} className="flex gap-2">
-                  <Select 
-                    value={id.type} 
+                  <Select
+                    value={id.type}
                     onValueChange={(val) => updateIdentifier(i, "type", val)}
                   >
                     <SelectTrigger className="w-[130px]">
@@ -1143,14 +1195,21 @@ export default function ConsultationDesk() {
                       <SelectItem value="Phone">Phone</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Input 
-                    placeholder="Enter ID value" 
+                  <Input
+                    placeholder="Enter ID value"
                     value={id.value}
-                    onChange={(e) => updateIdentifier(i, "value", e.target.value)}
+                    onChange={(e) =>
+                      updateIdentifier(i, "value", e.target.value)
+                    }
                     className="flex-1"
                   />
                   {patientInfo.identifiers.length > 1 && (
-                    <Button variant="ghost" size="icon" onClick={() => removeIdentifier(i)} className="text-muted-foreground">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeIdentifier(i)}
+                      className="text-muted-foreground"
+                    >
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   )}
@@ -1160,7 +1219,12 @@ export default function ConsultationDesk() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPatientDialog(false)}>Cancel</Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowPatientDialog(false)}
+            >
+              Cancel
+            </Button>
             <Button onClick={handleSavePatient}>Save Details</Button>
           </DialogFooter>
         </DialogContent>

@@ -10,7 +10,7 @@ import { toast } from "sonner";
 const appointments = [
   {
     id: 1,
-    patient: "Rahul Sharma",
+    patient: "Walter White",
     date: "2026-04-10",
     time: "10:00 AM",
     type: "Follow-up",
@@ -18,7 +18,7 @@ const appointments = [
   },
   {
     id: 2,
-    patient: "Rahul Sharma",
+    patient: "Walter White",
     date: "2026-04-10",
     time: "11:30 AM",
     type: "New Consultation",
@@ -53,14 +53,14 @@ const appointments = [
 const consultationHistory = [
   {
     date: "2026-04-09",
-    patient: "Rahul Sharma",
+    patient: "Walter White",
     diagnosis: "Gastroenteritis",
     icd: "1A3Z",
     fhir: "Published",
   },
   {
     date: "2026-04-08",
-    patient: "Rahul Sharma",
+    patient: "Walter White",
     diagnosis: "Hypertension",
     icd: "BA00",
     fhir: "Draft",

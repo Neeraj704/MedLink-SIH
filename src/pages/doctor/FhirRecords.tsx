@@ -120,14 +120,14 @@ export default function FhirRecords() {
   const records = [
     {
       id: "REC-001",
-      patient: "Rahul Sharma",
+      patient: "Walter White",
       date: "2026-04-09",
       type: "Condition",
       status: "Published",
     },
     {
       id: "REC-002",
-      patient: "Rahul Sharma",
+      patient: "Walter White",
       date: "2026-04-08",
       type: "Observation",
       status: "Draft",

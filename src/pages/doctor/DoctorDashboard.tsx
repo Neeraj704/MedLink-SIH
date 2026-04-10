@@ -42,7 +42,7 @@ const stats = [
 
 const recentPatients = [
   {
-    name: "Rahul Sharma",
+    name: "Walter White",
     id: "ABHA-1234-5678",
     time: "10:30 AM",
     status: "Completed",
