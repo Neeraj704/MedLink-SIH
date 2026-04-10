@@ -123,3 +123,93 @@
     box-shadow: 0 8px 30px hsl(0 0% 0% / 0.08);
   }
 }
+
+/* ── MedLink Chatbot Table Styles ── */
+.medlink-chat-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  overflow: hidden;
+  margin: 0.75rem 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  table-layout: auto;
+}
+
+.medlink-chat-prose thead {
+  background: hsl(var(--muted));
+}
+
+.medlink-chat-prose th {
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: hsl(var(--muted-foreground));
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 2px solid hsl(var(--border));
+  border-right: 1px solid hsl(var(--border));
+}
+
+.medlink-chat-prose th:last-child {
+  border-right: none;
+}
+
+.medlink-chat-prose td {
+  padding: 0.45rem 0.75rem;
+  font-size: 0.75rem;
+  color: hsl(var(--foreground));
+  border-bottom: 1px solid hsl(var(--border));
+  border-right: 1px solid hsl(var(--border));
+  vertical-align: top;
+}
+
+.medlink-chat-prose td:last-child {
+  border-right: none;
+}
+
+.medlink-chat-prose tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.medlink-chat-prose tbody tr:nth-child(even) {
+  background: hsl(var(--muted) / 0.4);
+}
+
+.medlink-chat-prose tbody tr:hover {
+  background: hsl(var(--primary) / 0.04);
+}
+
+/* Keep code and confidence columns from wrapping */
+.medlink-chat-prose td:nth-child(3),
+.medlink-chat-prose td:nth-child(4) {
+  white-space: nowrap;
+  font-family: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+  font-size: 0.7rem;
+}
+
+/* System column stays tight */
+.medlink-chat-prose td:first-child {
+  white-space: nowrap;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Scrollable wrapper for tables */
+.medlink-chat-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.medlink-chat-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.medlink-chat-scroll::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.25);
+  border-radius: 2px;
+}
