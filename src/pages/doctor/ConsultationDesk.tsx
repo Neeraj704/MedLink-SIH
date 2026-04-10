@@ -582,32 +582,32 @@ export default function ConsultationDesk() {
             </CardContent>
           </Card>
         ) : (
-          <Card className="bg-accent/10 border-primary/20">
+          <Card className="border-primary/20">
             <CardContent className="p-4 flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg border-2 border-primary/20">
                   {patientInfo.name.split(" ").map(n => n[0]).join("").toUpperCase() || "UN"}
                 </div>
                 <div>
-                  <div className="font-bold text-lg flex items-center gap-2">
-                    {patientInfo.name}
-                    <Badge variant="secondary" className="bg-primary/10 text-primary border-none text-[10px]">ACTIVE PATIENT</Badge>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="font-bold text-lg text-foreground">{patientInfo.name}</span>
+                    <Badge variant="secondary" className="bg-primary/10 text-primary border-none text-[10px] h-5 uppercase px-2 font-bold tracking-tight">Active Patient</Badge>
                   </div>
-                  <div className="flex flex-wrap gap-2 mt-1">
+                  <div className="flex flex-wrap gap-2">
                     {patientInfo.identifiers.map((id, idx) => (
-                      <Badge key={idx} variant="outline" className="text-[10px] h-5 font-mono bg-background/50">
-                        <Fingerprint className="w-3 h-3 mr-1 opacity-60" />
-                        {id.type}: {id.value}
+                      <Badge key={idx} variant="outline" className="text-[10px] h-6 font-mono bg-background/50 flex items-center gap-1.5 border-border/60 py-0 px-2 rounded-md">
+                        <Fingerprint className="w-3.5 h-3.5 opacity-40" />
+                        <span className="opacity-70 font-bold">{id.type}:</span> {id.value}
                       </Badge>
                     ))}
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={() => setShowPatientDialog(true)} className="h-8 text-xs">
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" size="sm" onClick={() => setShowPatientDialog(true)} className="h-8 text-xs font-medium hover:bg-transparent hover:text-primary transition-colors">
                   Change Patient
                 </Button>
-                <Badge variant="outline" className="text-[10px] uppercase font-bold tracking-wider opacity-60 bg-emerald-500/10 text-emerald-600 border-emerald-500/20">Active Session</Badge>
+                <Badge variant="outline" className="text-[10px] uppercase font-bold tracking-wider px-3 h-7 bg-emerald-500/5 text-emerald-600 border-emerald-500/20 rounded-full">Active Session</Badge>
               </div>
             </CardContent>
           </Card>
