@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           hpr: "Dr. Patel",
           abha: "Walter White",
           aadhaar: "Walter White",
-        };
+        }; 
         setUser({
           id: crypto.randomUUID(),
           name: nameMap[pendingAuth.method || "gmail"] || "User",
