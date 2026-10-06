@@ -1,0 +1,231 @@
+Project MedLink: A Comprehensive Technical, Functional, and Navigational Guide
+1.0 Executive Summary
+MedLink is a pioneering digital health platform engineered to address a fundamental challenge in India's healthcare landscape: the lack of interoperability between traditional Indian systems of medicine (Ayurveda, Siddha, Unani - collectively Ayush) and the global standards of modern medicine. The core mission of MedLink is to serve as a digital bridge, enabling seamless clinical documentation, data exchange, and analytics by implementing a sophisticated dual-coding system. This system translates diagnoses from the national NAMASTE (National AYUSH Morbidity & Standardized Terminologies Electronic) vocabulary into the internationally recognized ICD-11 (International Classification of Diseases, 11th Revision) framework.
+
+Built on the secure and scalable MERN stack (MongoDB, Express.js, React, Node.js), MedLink is more than just a translation tool; it is a complete clinical workflow application designed for the modern Indian digital health ecosystem. It leverages the national health stack for authentication, using the ABHA (Ayushman Bharat Health Account) for patients and the HPR (Healthcare Professional Registry) for doctors. All data generated is structured according to the FHIR R4 (Fast Healthcare Interoperability Resources) standard, ensuring it is ready for integration with any compliant hospital Electronic Medical Record (EMR) system. Through its intuitive user portals, AI-powered assistance, and robust backend, MedLink aims to enhance clinical efficiency, empower patients, and generate high-quality, standardized data to advance both traditional and modern medical research.
+
+2.0 The Problem Statement: A Tale of Two Vocabularies
+The Indian healthcare system is unique, with traditional Ayush practices operating in parallel with modern allopathic medicine. While both systems are vital, their information ecosystems are siloed. This creates significant challenges:
+
+Documentation Gap: An Ayurvedic doctor might diagnose a patient with "Agnimandya." This term is precise and meaningful within Ayurveda but is unintelligible to a modern EMR system, an insurance provider, or a global health researcher who only understands codes like "MG51 Dyspepsia" from the ICD-11 standard.
+
+Lack of Interoperability: A patient's health record becomes fragmented. The insights from an Ayush consultation are lost when the patient visits an allopathic hospital, as there is no standardized way to share this information.
+
+Insurance and Claims Processing: Health insurance claims almost exclusively rely on standardized ICD codes. Without a way to map Ayush diagnoses to these codes, processing claims for traditional treatments becomes difficult and often manual.
+
+Data and Research Deficit: The Ministry of Ayush lacks large-scale, high-quality, standardized data on morbidity and treatment effectiveness. It's difficult to answer critical public health questions, such as "What are the most prevalent conditions being treated with Unani medicine in Rajasthan?"
+
+MedLink is designed to solve these problems by creating a single point of truth where both medical vocabularies can coexist and be understood.
+
+3.0 System Architecture and Technology Stack
+MedLink is built as a modern, full-stack web application with a clear separation between the frontend and backend.
+
+Overall Architecture: A monorepo structure containing a client (React) and server (Node.js/Express.js) application. This allows for unified development and deployment.
+
+Frontend (client): A responsive single-page application (SPA) built with React. It utilizes React Router for navigation, Axios for communicating with the backend API, and React Context API for global state management (like user authentication). The UI is designed to be clean, intuitive, and efficient for both patients and doctors.
+
+Backend (server): A robust RESTful API built with Node.js and the Express.js framework. It handles all business logic, database operations, and communication with external national APIs (ABDM/HPR).
+
+Database: A MongoDB non-relational database, accessed via the Mongoose ODM (Object Data Modeling) library. This provides a flexible schema suitable for storing complex, nested JSON data like FHIR resources.
+
+Authentication: User identity is managed via JSON Web Tokens (JWT). Upon successful login via ABHA or HPR, the server issues a secure JWT, which the client then includes in the header of all subsequent requests to access protected routes.
+
+4.0 Core Features in Detail
+4.1 The Dual-Coding Engine
+This is the centerpiece of MedLink. It's not just a simple lookup table; it's an interactive clinical decision support tool.
+
+Workflow: When a doctor types a diagnosis into a text field in the prescription form, a request is sent to a dedicated backend terminology service.
+
+Technology: This service queries a specialized collection in MongoDB that contains the pre-ingested and indexed NAMASTE and ICD-11 code mappings. To prevent excessive API calls, the frontend uses a debounce mechanism, sending a query only after the user has paused typing for a few milliseconds.
+
+User Experience: The doctor is presented with a clean dropdown list showing the traditional term and its corresponding global standard term side-by-side (e.g., Vatavyadhi [NAMASTE] ↔ General vata disorder [ICD-11]). Selecting an entry populates the form with both codes, ensuring the final record is dual-coded.
+
+4.2 National Digital Health Ecosystem Integration
+MedLink is not a siloed application; it is a certified participant in the ABDM.
+
+Patient Authentication (ABHA): The patient login flow is handled entirely by the official ABDM gateway. Our application initiates the request, the user authenticates on the official ABDM interface (often a pop-up or redirect), and upon success, our backend receives a secure, short-lived access token. This ensures MedLink never handles the patient's primary credentials (like Aadhaar OTP), maximizing security.
+
+Doctor Authentication (HPR): A doctor's identity is verified against the Healthcare Professional Registry. When a doctor signs up with their HPR ID, our backend makes a server-to-server API call to the HPR system to validate that the ID is legitimate and the practitioner is in good standing. This prevents fraudulent use of the platform.
+
+4.3 FHIR R4 Compliance
+Adherence to the FHIR standard is non-negotiable for modern health applications.
+
+Process: After a doctor saves a consultation, our backend fhirService takes the structured data (patient ID, doctor ID, the dual-coded diagnosis, medications) and constructs a valid FHIR Bundle.
+
+Resources: This bundle contains multiple FHIR resources, such as Patient, Practitioner, Encounter, and, most importantly, Condition. The Condition.code.coding array is where the dual codes (one for NAMASTE, one for ICD-11) are stored, as per the FHIR specification for multiple codings.
+
+Benefit: This JSON-based FHIR Bundle is the final, interoperable artifact. It can be sent to any other system that speaks FHIR, ensuring the clinical data is machine-readable and universally understood.
+
+4.4 User Portals: Patient and Doctor Dashboards
+Doctor Dashboard: This is the clinician's command center. It allows them to search for patients via ABHA number, view a patient's historical encounters created within MedLink, and initiate new consultations.
+
+Patient Dashboard: This portal empowers the patient. They can log in securely to view a complete list of their medical records created on the platform. Each record can be viewed in detail or downloaded as a user-friendly PDF, providing them with a portable and understandable copy of their health information.
+
+4.5 Secure Report Generation & Delivery
+Workflow: When a doctor finalizes a prescription, the system uses the generated FHIR Bundle to populate a professionally designed PDF template. This PDF is then uploaded to a secure, private cloud storage bucket (like AWS S3 or Firebase Storage). A secure, time-limited access link is generated for this file, which is then sent to the patient's registered mobile number via an SMS/WhatsApp API (e.g., Twilio). This ensures the PDF is not sent directly over an insecure channel.
+
+4.6 Legacy Data Import (PDF to Text)
+Challenge: Patients often have years of paper-based records. MedLink provides a tool to start digitizing them.
+
+Technology: A doctor can upload a scan or PDF of an old prescription. The backend sends this file to an Optical Character Recognition (OCR) service (like Google Vision AI).
+
+Verification: The OCR service returns the extracted raw text. Critically, this text is not automatically saved. It is presented to the doctor in a special "verification UI" next to the original image. The doctor must manually review, correct any errors, and formally approve the data before it can be structured and saved as a new, dual-coded digital record. This human-in-the-loop process is essential for clinical accuracy and safety.
+
+4.7 AI-Powered Assistance (Chatbots)
+Public Chatbot: Deployed on the homepage, this chatbot is a general-purpose assistant trained on a knowledge base of FAQs about MedLink, ABHA, HPR, and the dual-coding concept. It handles user queries and provides support without requiring a login.
+
+Doctor's Assistant Chatbot: Available within the doctor's dashboard, this is a specialized tool. A doctor can type a diagnosis like "Amavata" and the chatbot will use the same backend terminology service to provide the corresponding NAMASTE and ICD-11 codes, acting as a quick reference tool.
+
+5.0 MedLink Application: A Detailed Navigational and Feature Guide
+This section provides a granular breakdown of every page, feature, and user action within the MedLink application. It is designed to be a comprehensive guide for the support chatbot.
+
+5.1 Publicly Accessible Pages
+These pages are available to any visitor without needing to log in.
+
+Page: Homepage (/)
+
+Access: Visit the main website URL (e.g., www.medlink.com).
+
+Purpose: Introduce MedLink to new users, explain its key features, and provide pathways to log in or sign up.
+
+Features & Navigation:
+
+Navbar (Top of page):
+
+MedLink Logo: Action: Navigates back to the Homepage (/).
+
+"Features" Link: Action: Smoothly scrolls the page down to the features section.
+
+"Login" Button: Action: Navigates to the Login Gateway page (/login).
+
+"Sign Up" Button: Action: Navigates to the Login Gateway page (/login), as the signup process is initiated from there.
+
+Hero Section (Top content area):
+
+"Get Started" Button: Action: Navigates to the Login Gateway page (/login).
+
+Chatbot Widget (Floating icon, bottom-right):
+
+Chatbot Icon: Action: Opens the General Queries Chatbot interface for asking questions about the platform.
+
+Page: Login Gateway (/login)
+
+Access: Click the "Login" or "Sign Up" button on the Homepage.
+
+Purpose: To direct the user to the correct login portal based on their role.
+
+Features & Navigation:
+
+"Patient Login" Button: Action: Navigates to the Patient Login page (/login/patient).
+
+"Doctor Login" Button: Action: Navigates to the Doctor Login page (/login/doctor).
+
+Page: Patient Login (/login/patient)
+
+Access: Click the "Patient Login" button on the Login Gateway.
+
+Purpose: To securely authenticate a patient using their national ABHA ID.
+
+Features & Navigation:
+
+"Enter your ABHA Number" Input Field: Action: User types their 14-digit ABHA number here.
+
+"Send OTP" Button: Action: Submits the ABHA number to the ABDM gateway to trigger an OTP to the patient's registered mobile. The UI then reveals the OTP input field.
+
+"Enter OTP" Input Field: Action: User types the 6-digit OTP they received.
+
+"Login" Button: Action: Submits the OTP for verification. On success, the user is redirected to their Patient Dashboard (/patient/dashboard).
+
+Page: Doctor Login (/login/doctor)
+
+Access: Click the "Doctor Login" button on the Login Gateway.
+
+Purpose: To securely authenticate a doctor using their national HPR ID.
+
+Features & Navigation:
+
+"Enter your HPR ID" Input Field: Action: Doctor types their HPR ID here.
+
+"Login / Verify" Button: Action: Submits the HPR ID to the backend for verification against the national registry. On success, the user is redirected to their Doctor Dashboard (/doctor/dashboard).
+
+5.2 Patient-Authenticated Pages
+These pages are only accessible after a patient has successfully logged in.
+
+Page: Patient Dashboard (/patient/dashboard)
+
+Access: Successfully log in through the Patient Login page.
+
+Purpose: To provide the patient with a secure view of all their health records created via MedLink.
+
+Features & Navigation:
+
+Navbar: Contains links for My Records (the current page), Profile, and a "Logout" button.
+
+Welcome Header: A personalized greeting (e.g., "Welcome back, Priya!").
+
+Records Table: A list of all medical encounters. Each row contains the Date of the visit, the Doctor's Name, the primary Diagnosis, and an action button.
+
+"View / Download" Button: Action: Opens a modal (pop-up window) displaying the full, formatted details of that specific prescription.
+
+Inside the Modal:
+
+Prescription Details: Shows all diagnoses, medications, and notes.
+
+"Download as PDF" Button: Action: Initiates the download of the prescription as a PDF file to the user's device.
+
+"Close" Button: Action: Closes the modal and returns to the dashboard view.
+
+5.3 Doctor-Authenticated Pages
+These pages are only accessible after a doctor has successfully logged in.
+
+Page: Doctor Dashboard (/doctor/dashboard)
+
+Access: Successfully log in through the Doctor Login page.
+
+Purpose: To serve as the doctor's main hub for managing patients and consultations.
+
+Features & Navigation:
+
+Navbar: Contains links for Dashboard (the current page), Patients, Profile, and a "Logout" button.
+
+"+ Start New Consultation" Button: Action: Navigates to the New Consultation page (/doctor/consultation/new).
+
+Patient Search Input Field: Action: Doctor can type a patient's ABHA number here to find them in the system.
+
+"Search" Button: Action: Submits the search query. If the patient is found, it will display their basic details and a button to view their history or start a new consultation.
+
+Recent Patients Table: A list of recently seen patients for quick access.
+
+Doctor's Assistant Chatbot (Floating icon):
+
+Chatbot Icon: Action: Opens the Doctor's Assistant Chatbot interface for quick code lookups.
+
+Page: New Consultation (/doctor/consultation/new)
+
+Access: Click the "+ Start New Consultation" button or select a patient from the search results on the Doctor Dashboard.
+
+Purpose: To create a new, dual-coded clinical record for a patient.
+
+Features & Navigation:
+
+Patient Header: Displays the name of the patient for whom the record is being created.
+
+Diagnosis Form:
+
+"Clinical Diagnosis" Input Field: Action: This is the core dual-coding feature. As the doctor types a diagnosis, a dropdown list of NAMASTE and ICD-11 suggestions appears automatically. Clicking a suggestion populates the record with both codes.
+
+Prescription Section:
+
+"+ Add Medication" Button: Action: Adds a new row to the medication list.
+
+Medicine List: Each row has input fields for Medicine Name, Dosage, Frequency, and Duration.
+
+Notes Section:
+
+"Additional Notes" Text Area: Action: A free-text area for the doctor to add any other relevant notes.
+
+Legacy Data Import Button:
+
+"Upload Old Prescription" Button: Action: Opens a file dialog for the doctor to upload a PDF/Image of a past record, initiating the OCR workflow.
+
+"Save and Finalize Prescription" Button: Action: Submits the completed form. The system creates the FHIR bundle, saves it, sends it to the EMR and the patient, and then redirects the doctor back to their dashboard, showing a success message.
