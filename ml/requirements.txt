@@ -1,0 +1,19 @@
+# FastAPI for serving the ML model
+fastapi==0.115.14
+uvicorn==0.35.0
+pydantic==2.11.7
+
+# Data handling
+pandas==2.3.0
+
+# Vector Database and Embeddings
+pinecone==7.3.0
+sentence-transformers==5.0.0
+chromadb==1.0.15
+
+# LangChain and Generative AI
+langchain==0.3.27
+langchain-google-genai==2.0.10
+
+# Environment variables
+python-dotenv==1.1.1
