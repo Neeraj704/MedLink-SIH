@@ -132,102 +132,112 @@ export function RosettaOrb({ reduce, className }: { reduce: boolean; className?:
       const sinX = Math.sin(tiltX - 0.18);
       const y2 = v[1] * cosX - z1 * sinX;
       const z2 = v[1] * sinX + z1 * cosX;
-      const persp = 3.2 / (3.2 + z2);
+      const denom = 3.2 + z2;
+      const persp = denom > 0.15 ? 3.2 / denom : 0.15;
       projected[out] = cx + x1 * scale * persp;
       projected[out + 1] = cy + y2 * scale * persp;
       projected[out + 2] = z2;
-      projected[out + 3] = persp;
+      projected[out + 3] = Math.max(0.01, persp);
     };
 
     const draw = (now: number) => {
-      const dt = Math.min(64, now - last);
-      last = now;
-      const t = reduce ? 1 : Math.min(1, (now - startTime) / 1800);
-      if (!reduce) {
-        rotY += dt * 0.00011;
-        tiltX += (targetX - tiltX) * 0.06;
-        tiltY += (targetY - tiltY) * 0.06;
-      }
-      if (width === 0 || height === 0) {
-        resize();
-        if (width === 0 || height === 0) return;
-      }
-      const cx = width / 2;
-      const cy = height / 2;
-      const scale = Math.min(width, height) * 0.38;
-
-      for (let i = 0; i < points.length; i++) {
-        const p = points[i];
-        const local = Math.max(0, Math.min(1, (t * 1.35 - p.delay) / 1));
-        const e = easeOutExpo(local);
-        const v: Vec = [p.start[0] + (p.end[0] - p.start[0]) * e, p.start[1] + (p.end[1] - p.start[1]) * e, p.start[2] + (p.end[2] - p.start[2]) * e];
-        project(v, i * 4, cx, cy, scale);
-      }
-
-      if (t > 0.45) {
-        const linkAlpha = Math.min(1, (t - 0.45) / 0.5);
-        ctx.lineWidth = 0.6;
-        for (const [a, b] of links) {
-          const za = projected[a * 4 + 2];
-          const depth = 1 - (za + 1) / 2;
-          ctx.globalAlpha = (0.05 + depth * 0.16) * linkAlpha;
-          ctx.strokeStyle = colors[points[a].cluster];
-          ctx.beginPath();
-          ctx.moveTo(projected[a * 4], projected[a * 4 + 1]);
-          ctx.lineTo(projected[b * 4], projected[b * 4 + 1]);
-          ctx.stroke();
+      try {
+        const dt = Math.min(64, now - last);
+        last = now;
+        const t = reduce ? 1 : Math.min(1, (now - startTime) / 1800);
+        if (!reduce) {
+          rotY += dt * 0.00011;
+          tiltX += (targetX - tiltX) * 0.06;
+          tiltY += (targetY - tiltY) * 0.06;
         }
-      }
+        if (width === 0 || height === 0) {
+          resize();
+          if (width === 0 || height === 0) return;
+        }
+        const cx = width / 2;
+        const cy = height / 2;
+        const scale = Math.min(width, height) * 0.38;
 
-      order.sort((a, b) => projected[b * 4 + 2] - projected[a * 4 + 2]);
-      for (const i of order) {
-        const z = projected[i * 4 + 2];
-        const persp = projected[i * 4 + 3];
-        const depth = 1 - (z + 1) / 2;
-        const p = points[i];
-        ctx.globalAlpha = p.cluster === 3 ? 0.55 + depth * 0.45 : 0.22 + depth * 0.72;
-        ctx.fillStyle = colors[p.cluster];
-        ctx.beginPath();
-        ctx.arc(projected[i * 4], projected[i * 4 + 1], p.size * persp * (p.cluster === 3 ? 1.5 : 1.25), 0, Math.PI * 2);
-        ctx.fill();
-      }
+        for (let i = 0; i < points.length; i++) {
+          const p = points[i];
+          const local = Math.max(0, Math.min(1, (t * 1.35 - p.delay) / 1));
+          const e = easeOutExpo(local);
+          const v: Vec = [
+            p.start[0] + (p.end[0] - p.start[0]) * e,
+            p.start[1] + (p.end[1] - p.start[1]) * e,
+            p.start[2] + (p.end[2] - p.start[2]) * e,
+          ];
+          project(v, i * 4, cx, cy, scale);
+        }
 
-      if (!reduce && t >= 1) {
-        const cycle = 3200;
-        const phase = ((now - startTime) % cycle) / cycle;
-        const k = Math.floor((now - startTime) / cycle) % 3;
-        if (phase < 0.55) {
-          const prog = easeOutExpo(phase / 0.55);
-          const d = dirs[k];
-          const from: Vec = [d[0], d[1], d[2]];
-          const pos: Vec = [from[0] * (1 - prog), from[1] * (1 - prog), from[2] * (1 - prog)];
-          const idx = (SURFACE + CORE - 1) * 4;
-          const saved = [projected[idx], projected[idx + 1], projected[idx + 2], projected[idx + 3]];
-          project(from, idx, cx, cy, scale);
-          const fx = projected[idx];
-          const fy = projected[idx + 1];
-          project(pos, idx, cx, cy, scale);
-          const px = projected[idx];
-          const py = projected[idx + 1];
-          projected.set(saved, idx);
-          const grad = ctx.createLinearGradient(fx, fy, px, py);
-          grad.addColorStop(0, `${colors[k]}00`);
-          grad.addColorStop(1, colors[k]);
-          ctx.globalAlpha = 0.9 * (1 - prog * 0.4);
-          ctx.strokeStyle = grad;
-          ctx.lineWidth = 1.5;
+        if (t > 0.45) {
+          const linkAlpha = Math.min(1, (t - 0.45) / 0.5);
+          ctx.lineWidth = 0.6;
+          for (const [a, b] of links) {
+            const za = projected[a * 4 + 2];
+            const depth = 1 - (za + 1) / 2;
+            ctx.globalAlpha = (0.05 + depth * 0.16) * linkAlpha;
+            ctx.strokeStyle = colors[points[a].cluster];
+            ctx.beginPath();
+            ctx.moveTo(projected[a * 4], projected[a * 4 + 1]);
+            ctx.lineTo(projected[b * 4], projected[b * 4 + 1]);
+            ctx.stroke();
+          }
+        }
+
+        order.sort((a, b) => projected[b * 4 + 2] - projected[a * 4 + 2]);
+        for (const i of order) {
+          const z = projected[i * 4 + 2];
+          const persp = Math.max(0.01, projected[i * 4 + 3]);
+          const depth = 1 - (z + 1) / 2;
+          const p = points[i];
+          ctx.globalAlpha = p.cluster === 3 ? 0.55 + depth * 0.45 : 0.22 + depth * 0.72;
+          ctx.fillStyle = colors[p.cluster];
           ctx.beginPath();
-          ctx.moveTo(fx, fy);
-          ctx.lineTo(px, py);
-          ctx.stroke();
-          ctx.globalAlpha = 1;
-          ctx.fillStyle = colors[k];
-          ctx.beginPath();
-          ctx.arc(px, py, 3.2, 0, Math.PI * 2);
+          const r = Math.max(0.1, p.size * persp * (p.cluster === 3 ? 1.5 : 1.25));
+          ctx.arc(projected[i * 4], projected[i * 4 + 1], r, 0, Math.PI * 2);
           ctx.fill();
         }
+
+        if (!reduce && t >= 1) {
+          const cycle = 3200;
+          const phase = ((now - startTime) % cycle) / cycle;
+          const k = Math.floor((now - startTime) / cycle) % 3;
+          if (phase < 0.55) {
+            const prog = easeOutExpo(phase / 0.55);
+            const d = dirs[k];
+            const from: Vec = [d[0], d[1], d[2]];
+            const pos: Vec = [from[0] * (1 - prog), from[1] * (1 - prog), from[2] * (1 - prog)];
+            const idx = (SURFACE + CORE - 1) * 4;
+            const saved = [projected[idx], projected[idx + 1], projected[idx + 2], projected[idx + 3]];
+            project(from, idx, cx, cy, scale);
+            const fx = projected[idx];
+            const fy = projected[idx + 1];
+            project(pos, idx, cx, cy, scale);
+            const px = projected[idx];
+            const py = projected[idx + 1];
+            projected.set(saved, idx);
+            const grad = ctx.createLinearGradient(fx, fy, px, py);
+            grad.addColorStop(0, `${colors[k]}00`);
+            grad.addColorStop(1, colors[k]);
+            ctx.globalAlpha = 0.9 * (1 - prog * 0.4);
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(fx, fy);
+            ctx.lineTo(px, py);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = colors[k];
+            ctx.beginPath();
+            ctx.arc(px, py, 3.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+        ctx.globalAlpha = 1;
+      } catch (err) {
+        console.error("[RosettaOrb] render error:", err);
       }
-      ctx.globalAlpha = 1;
     };
 
     const loop = (now: number) => {
