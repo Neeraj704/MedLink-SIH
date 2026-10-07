@@ -22,12 +22,12 @@ export function AuthShowcase() {
   return (
     <aside
       aria-label="About MedLink"
-      className="relative hidden flex-col justify-between gap-8 overflow-hidden border-l border-hairline bg-canvas-alt p-10 lg:flex xl:p-14"
+      className="relative hidden h-full min-h-0 flex-col justify-between gap-4 overflow-hidden border-l border-hairline bg-canvas-alt p-6 lg:flex xl:p-8"
     >
-      <p className="t-mono text-[11px] uppercase tracking-[0.1em] text-ink-3">{HERO.eyebrow}</p>
+      <p className="t-mono shrink-0 text-[11px] uppercase tracking-[0.1em] text-ink-3">{HERO.eyebrow}</p>
 
-      <div className="mx-auto flex w-full max-w-[440px] flex-col items-center gap-5">
-        <div className="relative aspect-square w-[min(340px,34svh)]">
+      <div className="mx-auto flex w-full max-w-[420px] flex-col items-center gap-3.5 my-auto">
+        <div className="relative aspect-square w-[min(280px,28svh)]">
           <RosettaOrb reduce={reduce} className="absolute inset-0 size-full" />
         </div>
         <ul aria-label="One diagnosis translated into four vocabularies" className="w-full overflow-hidden rounded-2xl border border-hairline bg-raised">
@@ -39,27 +39,27 @@ export function AuthShowcase() {
                 initial={reduce ? false : { opacity: 0, x: 16 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.7, ease: EASE_EXPO, delay: 0.3 + i * 0.12 }}
-                className={`flex items-center justify-between px-4 py-3 ${i > 0 ? "border-t border-hairline" : ""} ${isCore ? "bg-canvas-alt" : ""}`}
+                className={`flex items-center justify-between px-3.5 py-2.5 ${i > 0 ? "border-t border-hairline" : ""} ${isCore ? "bg-canvas-alt" : ""}`}
               >
-                <span className="flex items-center gap-2.5">
+                <span className="flex items-center gap-2">
                   <span className="size-2 rounded-full" style={{ background: SYSTEM_VARS[r.system].fill }} aria-hidden="true" />
                   <span className="t-mono text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: SYSTEM_VARS[r.system].text }}>
                     {r.label}
                   </span>
                 </span>
-                <span className={`text-[15px] ${isCore ? "font-semibold text-ink" : "text-ink"}`}>{r.term}</span>
+                <span className={`text-[14px] ${isCore ? "font-semibold text-ink" : "text-ink"}`}>{r.term}</span>
               </motion.li>
             );
           })}
         </ul>
       </div>
 
-      <ul className="grid grid-cols-3 gap-6">
+      <ul className="grid shrink-0 grid-cols-3 gap-4">
         {POINTS.map(({ icon: Icon, title, body }) => (
           <li key={title}>
-            <Icon className="size-5 text-link" strokeWidth={1.75} aria-hidden="true" />
-            <p className="mt-2.5 text-[14px] font-semibold text-ink">{title}</p>
-            <p className="mt-1 text-[13px] leading-snug text-ink-2">{body}</p>
+            <Icon className="size-4 text-link" strokeWidth={1.75} aria-hidden="true" />
+            <p className="mt-1.5 text-[13.5px] font-semibold text-ink">{title}</p>
+            <p className="mt-0.5 text-[12px] leading-snug text-ink-2">{body}</p>
           </li>
         ))}
       </ul>

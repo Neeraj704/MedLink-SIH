@@ -86,8 +86,16 @@ export function RosettaOrb({ reduce, className }: { reduce: boolean; className?:
     if (!ctx) return;
 
     const { points, links, dirs } = buildPoints();
+    const defaultColors = [
+      isDark ? "#30d158" : "#34c759",
+      "#ff9f0a",
+      isDark ? "#bf5af2" : "#af52de",
+      "#0a84ff",
+    ];
     const styles = getComputedStyle(canvas);
-    const colors = ["--ayurveda", "--siddha", "--unani", "--icd"].map((v) => styles.getPropertyValue(v).trim() || "#0a84ff");
+    const colors = ["--ayurveda", "--siddha", "--unani", "--icd"].map(
+      (v, i) => styles.getPropertyValue(v).trim() || defaultColors[i],
+    );
 
     let width = 0;
     let height = 0;
@@ -140,8 +148,10 @@ export function RosettaOrb({ reduce, className }: { reduce: boolean; className?:
         tiltX += (targetX - tiltX) * 0.06;
         tiltY += (targetY - tiltY) * 0.06;
       }
-      if (Math.random() < 0.02) console.log("[v0] orb draw", { t, width, height, now, startTime, n: points.length });
-      ctx.clearRect(0, 0, width, height);
+      if (width === 0 || height === 0) {
+        resize();
+        if (width === 0 || height === 0) return;
+      }
       const cx = width / 2;
       const cy = height / 2;
       const scale = Math.min(width, height) * 0.38;
@@ -226,14 +236,44 @@ export function RosettaOrb({ reduce, className }: { reduce: boolean; className?:
       frame = requestAnimationFrame(loop);
     };
 
+    const startLoop = () => {
+      if (!running) {
+        running = true;
+        last = performance.now();
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(loop);
+      }
+    };
+
+    const stopLoop = () => {
+      if (running) {
+        running = false;
+        cancelAnimationFrame(frame);
+      }
+    };
+
     const onPointer = (e: PointerEvent) => {
       targetY = (e.clientX / window.innerWidth - 0.5) * 2 * MAX_TILT;
       targetX = (e.clientY / window.innerHeight - 0.5) * 2 * MAX_TILT;
     };
 
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") {
+        startLoop();
+      } else {
+        stopLoop();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
     const ro = new ResizeObserver(() => {
       resize();
-      if (reduce) draw(performance.now());
+      if (width > 0 && height > 0) {
+        if (!reduce) {
+          startLoop();
+        }
+        draw(performance.now());
+      }
     });
     ro.observe(canvas);
 
@@ -243,18 +283,20 @@ export function RosettaOrb({ reduce, className }: { reduce: boolean; className?:
     } else {
       window.addEventListener("pointermove", onPointer, { passive: true });
       io = new IntersectionObserver(([entry]) => {
-        const visible = entry.isIntersecting && document.visibilityState === "visible";
-        if (visible && !running) {
-          running = true;
-          last = performance.now();
-          frame = requestAnimationFrame(loop);
-        } else if (!visible) {
-          running = false;
-          cancelAnimationFrame(frame);
+        const isVisible = entry.isIntersecting && document.visibilityState === "visible";
+        if (isVisible) {
+          startLoop();
+        } else if (
+          !entry.isIntersecting &&
+          entry.boundingClientRect.width > 0 &&
+          entry.boundingClientRect.height > 0
+        ) {
+          stopLoop();
         }
       });
       io.observe(canvas);
-      frame = requestAnimationFrame(loop);
+      startLoop();
+      draw(performance.now());
     }
 
     return () => {
@@ -263,6 +305,7 @@ export function RosettaOrb({ reduce, className }: { reduce: boolean; className?:
       ro.disconnect();
       io?.disconnect();
       window.removeEventListener("pointermove", onPointer);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [reduce, isDark]);
 

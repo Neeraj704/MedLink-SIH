@@ -3,10 +3,16 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Info } from "lucide-react";
 import Link from "@/components/Link";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { DEMO_OTP, SIGNUP_ROUTE } from "@/lib/landing-data";
 import { useAuth } from "@/contexts/AuthContext";
-import { ROLE_CONFIG, maskId, validateIdentifier, type AuthRole } from "./auth-config";
+import {
+  ROLE_CONFIG,
+  detectIdentifier,
+  maskId,
+  validateIdentifier,
+  type AuthRole,
+} from "./auth-config";
 import { AuthButton, RoleToggle, TextField } from "./fields";
 import { VerifyStep } from "./VerifyStep";
 
@@ -29,6 +35,22 @@ export function SignInForm({ initialRole }: { initialRole: AuthRole }) {
 
   useEffect(() => () => clearTimeout(timer.current), []);
 
+  const detection = useMemo(() => detectIdentifier(role, identifier), [role, identifier]);
+
+  const handleIdentifierChange = (val: string) => {
+    // If user is typing digits or standard identifier, apply auto-format
+    if (/^\d[\d\s-]*$/.test(val)) {
+      const parsed = detectIdentifier(role, val);
+      setIdentifier(parsed.formatted || val);
+    } else if (role === "doctor" && /^[a-zA-Z]/i.test(val) && !val.includes("@")) {
+      const parsed = detectIdentifier(role, val);
+      setIdentifier(parsed.formatted || val.toUpperCase());
+    } else {
+      setIdentifier(val);
+    }
+    if (error) setError(undefined);
+  };
+
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
     const problem = validateIdentifier(role, identifier);
@@ -37,7 +59,7 @@ export function SignInForm({ initialRole }: { initialRole: AuthRole }) {
       requestAnimationFrame(() => formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus());
       return;
     }
-    login(role, role === "doctor" ? "hpr" : "abha", identifier);
+    login(role, detection.method, detection.formatted || identifier);
     setSending(true);
     timer.current = setTimeout(() => {
       setSending(false);
@@ -51,10 +73,12 @@ export function SignInForm({ initialRole }: { initialRole: AuthRole }) {
     <AnimatePresence mode="wait" initial={false}>
       {step === "form" ? (
         <motion.div key="form" {...stepMotion}>
-          <h1 className="text-[32px] font-semibold leading-tight tracking-[-0.03em] text-ink">Welcome back</h1>
-          <p className="mt-2 text-[15px] text-ink-2">Sign in to your MedLink workspace.</p>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.03em] text-ink sm:text-[30px]">
+            Welcome back
+          </h1>
+          <p className="mt-1 text-[14px] text-ink-2">Sign in to your MedLink workspace.</p>
 
-          <form ref={formRef} onSubmit={onSubmit} noValidate className="mt-8 space-y-5">
+          <form ref={formRef} onSubmit={onSubmit} noValidate className="mt-5 space-y-3.5">
             <RoleToggle
               value={role}
               onChange={(r) => {
@@ -65,13 +89,20 @@ export function SignInForm({ initialRole }: { initialRole: AuthRole }) {
             <TextField
               label={config.idLabel}
               placeholder={config.idPlaceholder}
-              hint={config.signinHint}
+              hint={detection.kind !== "unknown" ? detection.hint : config.signinHint}
               error={error}
               value={identifier}
-              onChange={(e) => {
-                setIdentifier(e.target.value);
-                if (error) setError(undefined);
-              }}
+              statusBadge={
+                identifier.trim()
+                  ? {
+                      label: detection.label,
+                      isValid: detection.isValid,
+                      countText: detection.countText,
+                    }
+                  : undefined
+              }
+              isValid={detection.isValid}
+              onChange={(e) => handleIdentifierChange(e.target.value)}
               autoComplete="username"
               autoCapitalize="none"
               spellCheck={false}
@@ -81,7 +112,7 @@ export function SignInForm({ initialRole }: { initialRole: AuthRole }) {
             </AuthButton>
           </form>
 
-          <div className="mt-6 flex items-start gap-2.5 rounded-xl border border-hairline bg-canvas-alt p-3.5 text-[13px] leading-relaxed text-ink-2">
+          <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-hairline bg-canvas-alt p-3 text-[12.5px] leading-relaxed text-ink-2">
             <Info className="mt-0.5 size-4 shrink-0 text-link" aria-hidden="true" />
             <p>
               Prototype: no real account is created. Use any valid-looking ID — the demo OTP is{" "}
@@ -89,7 +120,7 @@ export function SignInForm({ initialRole }: { initialRole: AuthRole }) {
             </p>
           </div>
 
-          <p className="mt-8 text-center text-[14px] text-ink-2">
+          <p className="mt-5 text-center text-[13.5px] text-ink-2">
             New to MedLink?{" "}
             <Link href={`${SIGNUP_ROUTE}?role=${role}`} className="font-medium text-link hover:underline">
               Create an account

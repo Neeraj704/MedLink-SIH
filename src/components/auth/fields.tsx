@@ -1,16 +1,22 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ChevronDown, Loader2, Stethoscope, UserRound } from "lucide-react";
+import { Check, ChevronDown, Loader2, Stethoscope, UserRound } from "lucide-react";
 import { useId, type ComponentProps, type KeyboardEvent } from "react";
 import { btnPrimary } from "@/components/landing/primitives";
 import { cn } from "@/lib/utils";
 import { ROLE_CONFIG, ROLES, type AuthRole } from "./auth-config";
 
 const control =
-  "h-12 w-full rounded-xl border bg-raised px-4 text-[16px] text-ink outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-ink-3 focus:border-link focus:ring-4 focus:ring-[color-mix(in_oklab,var(--blue)_22%,transparent)]";
+  "h-11 w-full rounded-xl border bg-raised px-3.5 text-[15px] text-ink outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-ink-3 focus:border-link focus:ring-4 focus:ring-[color-mix(in_oklab,var(--blue)_22%,transparent)]";
 const idleBorder =
   "border-[color-mix(in_oklab,var(--ink)_16%,transparent)] hover:border-[color-mix(in_oklab,var(--ink)_30%,transparent)]";
+
+export interface StatusBadge {
+  label: string;
+  isValid: boolean;
+  countText?: string;
+}
 
 function FieldShell({
   id,
@@ -18,6 +24,7 @@ function FieldShell({
   optional,
   hint,
   error,
+  statusBadge,
   children,
 }: {
   id: string;
@@ -25,21 +32,40 @@ function FieldShell({
   optional?: boolean;
   hint?: string;
   error?: string;
+  statusBadge?: StatusBadge;
   children: React.ReactNode;
 }) {
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 flex items-baseline justify-between text-[13px] font-medium text-ink">
-        {label}
-        {optional && <span className="font-normal text-ink-3">Optional</span>}
-      </label>
+      <div className="mb-1 flex items-baseline justify-between text-[13px] font-medium text-ink">
+        <label htmlFor={id}>{label}</label>
+        <div className="flex items-center gap-1.5">
+          {statusBadge && statusBadge.label ? (
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors",
+                statusBadge.isValid
+                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  : "bg-canvas-alt text-ink-3 border border-hairline",
+              )}
+            >
+              {statusBadge.isValid ? <Check className="size-3 text-emerald-500" strokeWidth={2.5} /> : null}
+              <span>{statusBadge.label}</span>
+              {statusBadge.countText && (
+                <span className="font-mono text-[10px] opacity-75">{statusBadge.countText}</span>
+              )}
+            </span>
+          ) : null}
+          {optional && !statusBadge?.label && <span className="font-normal text-ink-3 text-[12px]">Optional</span>}
+        </div>
+      </div>
       {children}
       {error ? (
-        <p id={`${id}-d`} role="alert" className="mt-1.5 text-[13px] text-danger">
+        <p id={`${id}-d`} role="alert" className="mt-1 text-[12.5px] text-danger">
           {error}
         </p>
       ) : hint ? (
-        <p id={`${id}-d`} className="mt-1.5 text-[13px] text-ink-3">
+        <p id={`${id}-d`} className="mt-1 text-[12px] text-ink-3">
           {hint}
         </p>
       ) : null}
@@ -53,23 +79,48 @@ type TextFieldProps = Omit<ComponentProps<"input">, "id"> & {
   error?: string;
   adornment?: string;
   optional?: boolean;
+  statusBadge?: StatusBadge;
+  isValid?: boolean;
 };
 
-export function TextField({ label, hint, error, adornment, optional, className, ...props }: TextFieldProps) {
+export function TextField({
+  label,
+  hint,
+  error,
+  adornment,
+  optional,
+  statusBadge,
+  isValid,
+  className,
+  ...props
+}: TextFieldProps) {
   const id = useId();
   return (
-    <FieldShell id={id} label={label} optional={optional} hint={hint} error={error}>
+    <FieldShell id={id} label={label} optional={optional} hint={hint} error={error} statusBadge={statusBadge}>
       <div className="relative">
         {adornment && (
-          <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-[16px] text-ink-2">{adornment}</span>
+          <span className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-[15px] font-medium text-ink-2">
+            {adornment}
+          </span>
         )}
         <input
           id={id}
           aria-invalid={error ? true : undefined}
           aria-describedby={error || hint ? `${id}-d` : undefined}
-          className={cn(control, error ? "border-danger" : idleBorder, adornment && "pl-12", className)}
+          className={cn(
+            control,
+            error ? "border-danger" : isValid ? "border-emerald-500/50" : idleBorder,
+            adornment && "pl-11",
+            (isValid || error) && "pr-10",
+            className,
+          )}
           {...props}
         />
+        {isValid && !error && (
+          <span className="pointer-events-none absolute inset-y-0 right-3.5 flex items-center text-emerald-500">
+            <Check className="size-4" strokeWidth={2.5} />
+          </span>
+        )}
       </div>
     </FieldShell>
   );
@@ -117,7 +168,7 @@ export function RoleToggle({ value, onChange }: { value: AuthRole; onChange: (ro
   };
   return (
     <div>
-      <p id="role-label" className="mb-1.5 text-[13px] font-medium text-ink">
+      <p id="role-label" className="mb-1 text-[13px] font-medium text-ink">
         I am a
       </p>
       <div
@@ -139,7 +190,7 @@ export function RoleToggle({ value, onChange }: { value: AuthRole; onChange: (ro
               tabIndex={active ? 0 : -1}
               onClick={() => onChange(r)}
               className={cn(
-                "relative flex h-10 items-center justify-center gap-2 rounded-lg text-[14px] font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-link",
+                "relative flex h-9 items-center justify-center gap-2 rounded-lg text-[13.5px] font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-link",
                 active ? "text-ink" : "text-ink-2 hover:text-ink",
               )}
             >
@@ -165,7 +216,7 @@ export function AuthButton({ loading, children, className, ...props }: Component
     <button
       {...props}
       disabled={props.disabled || loading}
-      className={cn(btnPrimary, "h-12 w-full text-[16px] disabled:cursor-not-allowed disabled:opacity-50", className)}
+      className={cn(btnPrimary, "h-11 w-full text-[15px] font-medium disabled:cursor-not-allowed disabled:opacity-50", className)}
     >
       {loading ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : null}
       {children}
