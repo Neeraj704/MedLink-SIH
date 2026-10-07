@@ -118,7 +118,7 @@ export function RosettaOrb({ reduce, className }: { reduce: boolean; className?:
     startRef.current ??= performance.now();
     const startTime = startRef.current;
     let last = startTime;
-    let running = true;
+    let running = false;
     let frame = 0;
     const projected = new Float32Array((SURFACE + CORE) * 4);
     const order = points.map((_, i) => i);
@@ -154,6 +154,7 @@ export function RosettaOrb({ reduce, className }: { reduce: boolean; className?:
           resize();
           if (width === 0 || height === 0) return;
         }
+        ctx.clearRect(0, 0, width, height);
         const cx = width / 2;
         const cy = height / 2;
         const scale = Math.min(width, height) * 0.38;
