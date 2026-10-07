@@ -1,9 +1,9 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 
 export type UserRole = "doctor" | "patient" | null;
-export type AuthMethod = "gmail" | "hpr" | "abha" | "aadhaar" | null;
+export type AuthMethod = "gmail" | "hpr" | "abha" | "aadhaar" | "mobile" | null;
 
-interface User {
+export interface User {
   id: string;
   name: string;
   role: UserRole;
@@ -16,44 +16,86 @@ interface AuthContextType {
   user: User | null;
   role: UserRole;
   isAuthenticated: boolean;
-  login: (role: UserRole, method: AuthMethod, identifier: string) => void;
+  login: (role: UserRole, method: AuthMethod, identifier: string, name?: string) => void;
   logout: () => void;
-  verifyOtp: (otp: string) => boolean;
+  verifyOtp: (otp: string, fallbackRole?: UserRole, fallbackName?: string) => boolean;
+  setAuthenticatedUser: (role: "doctor" | "patient", name?: string, identifier?: string) => void;
 }
+
+const STORAGE_KEY = "medlink:user";
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+
   const [pendingAuth, setPendingAuth] = useState<{
     role: UserRole;
     method: AuthMethod;
     identifier: string;
+    name?: string;
   } | null>(null);
 
+  useEffect(() => {
+    try {
+      if (user) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+      } else {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    } catch {
+      // storage unavailable
+    }
+  }, [user]);
+
   const login = useCallback(
-    (role: UserRole, method: AuthMethod, identifier: string) => {
-      setPendingAuth({ role, method, identifier });
+    (role: UserRole, method: AuthMethod, identifier: string, name?: string) => {
+      setPendingAuth({ role, method, identifier, name });
+    },
+    [],
+  );
+
+  const setAuthenticatedUser = useCallback(
+    (role: "doctor" | "patient", name?: string, identifier: string = "") => {
+      const defaultName = role === "doctor" ? "Dr. Ananya Sharma" : "Priya Sharma";
+      const newUser: User = {
+        id: crypto.randomUUID(),
+        name: name?.trim() || defaultName,
+        role,
+        method: role === "doctor" ? "hpr" : "abha",
+        identifier: identifier || (role === "doctor" ? "HPR-9824-3102" : "91-8842-1920-3341"),
+      };
+      setUser(newUser);
+      setPendingAuth(null);
     },
     [],
   );
 
   const verifyOtp = useCallback(
-    (otp: string): boolean => {
-      if (otp === "587315" && pendingAuth) {
-        const nameMap: Record<string, string> = {
-          gmail: "Dr. Sharma",
-          hpr: "Dr. Patel",
-          abha: "Walter White",
-          aadhaar: "Walter White",
-        }; 
-        setUser({
+    (otp: string, fallbackRole?: UserRole, fallbackName?: string): boolean => {
+      if (otp === "587315") {
+        const targetRole = pendingAuth?.role || fallbackRole || "doctor";
+        const targetName =
+          pendingAuth?.name ||
+          fallbackName ||
+          (targetRole === "doctor" ? "Dr. Ananya Sharma" : "Priya Sharma");
+
+        const newUser: User = {
           id: crypto.randomUUID(),
-          name: nameMap[pendingAuth.method || "gmail"] || "User",
-          role: pendingAuth.role,
-          method: pendingAuth.method,
-          identifier: pendingAuth.identifier,
-        });
+          name: targetName,
+          role: targetRole,
+          method: pendingAuth?.method || (targetRole === "doctor" ? "hpr" : "abha"),
+          identifier: pendingAuth?.identifier || (targetRole === "doctor" ? "HPR-9824-3102" : "91-8842-1920-3341"),
+        };
+
+        setUser(newUser);
         setPendingAuth(null);
         return true;
       }
@@ -65,6 +107,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(() => {
     setUser(null);
     setPendingAuth(null);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // ignore
+    }
   }, []);
 
   return (
@@ -76,6 +123,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         logout,
         verifyOtp,
+        setAuthenticatedUser,
       }}
     >
       {children}

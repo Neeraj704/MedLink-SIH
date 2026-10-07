@@ -7,7 +7,8 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 
 import LandingPage from "./pages/LandingPage";
-import AuthPage from "./pages/AuthPage";
+import SignInPage from "./pages/SignInPage";
+import SignUpPage from "./pages/SignUpPage";
 import NotFound from "./pages/NotFound";
 
 import DoctorLayout from "./layouts/DoctorLayout";
@@ -33,7 +34,7 @@ const queryClient = new QueryClient();
 
 function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode; requiredRole: 'doctor' | 'patient' }) {
   const { isAuthenticated, role } = useAuth();
-  if (!isAuthenticated) return <Navigate to="/auth" replace />;
+  if (!isAuthenticated) return <Navigate to="/signin" replace />;
   if (role !== requiredRole) return <Navigate to="/" replace />;
   return <>{children}</>;
 }
@@ -42,7 +43,9 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
-      <Route path="/auth" element={<AuthPage />} />
+      <Route path="/signin" element={<SignInPage />} />
+      <Route path="/signup" element={<SignUpPage />} />
+      <Route path="/auth" element={<Navigate to="/signin" replace />} />
 
       <Route path="/doctor" element={<ProtectedRoute requiredRole="doctor"><DoctorLayout /></ProtectedRoute>}>
         <Route index element={<DoctorDashboard />} />
