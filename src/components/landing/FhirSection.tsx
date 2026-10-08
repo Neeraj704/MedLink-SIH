@@ -66,9 +66,9 @@ export function FhirSection() {
           A validated <Term k="HL7 FHIR R4" /> transaction Bundle.
         </p>
 
-        <div className="mt-16 grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        <div className="mt-12 grid gap-6 sm:mt-16 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
           <Reveal>
-            <div role="tablist" aria-label="FHIR resources" aria-orientation="vertical" className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-2">
+            <div role="tablist" aria-label="FHIR resources" aria-orientation="vertical" className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-2">
               {FHIR_SHEETS.map((s) => (
                 <button
                   key={s.id}
@@ -78,16 +78,16 @@ export function FhirSection() {
                   aria-controls="fhir-detail"
                   onClick={() => setActive(s.id)}
                   className={cn(
-                    "rounded-2xl border p-4 text-left transition-[border-color,background-color] duration-300",
+                    "rounded-2xl border p-3 text-left transition-[border-color,background-color] duration-300 sm:p-4",
                     active === s.id ? "border-link bg-[color-mix(in_oklab,var(--blue)_8%,var(--bg-raised))]" : "card-surface hover:border-ink-3/40",
                   )}
                 >
                   <p className={cn("t-mono", active === s.id ? "text-link" : "text-ink-3")}>{s.id}</p>
-                  <p className="mt-1 text-[15px] font-medium leading-snug text-ink">{s.body}</p>
+                  <p className="mt-1 text-[14px] font-medium leading-snug text-ink sm:text-[15px]">{s.body}</p>
                 </button>
               ))}
             </div>
-            <div id="fhir-detail" role="tabpanel" aria-live="polite" className="card-surface mt-4 rounded-[24px] p-6">
+            <div id="fhir-detail" role="tabpanel" aria-live="polite" className="card-surface mt-4 rounded-[24px] p-4 sm:p-6">
               <AnimatePresence mode="wait">
                 <motion.div key={sheet.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.35, ease: EASE_EXPO }}>
                   <h3 className="t-h3 text-ink">{sheet.title}</h3>
@@ -113,14 +113,14 @@ export function FhirSection() {
                 </button>
               }
             >
-              <pre className="no-scrollbar max-h-[520px] overflow-auto py-4 text-[12.5px] leading-[1.7]" data-lenis-prevent tabIndex={0} aria-label="Sample FHIR R4 Bundle JSON">
+              <pre className="no-scrollbar max-h-[420px] overflow-auto py-4 text-[11.5px] leading-[1.7] sm:max-h-[520px] sm:text-[12.5px]" data-lenis-prevent tabIndex={0} aria-label="Sample FHIR R4 Bundle JSON">
                 <code className="block font-mono">
                   {LINES.map((line, i) => {
                     const on = i >= start && i <= end;
                     return (
                       <span
                         key={i}
-                        className={cn("block whitespace-pre px-5 transition-[background-color,opacity] duration-300", on ? "bg-[color-mix(in_oklab,var(--blue)_10%,transparent)]" : start >= 0 && "opacity-55")}
+                        className={cn("block whitespace-pre px-4 transition-[background-color,opacity] duration-300 sm:px-5", on ? "bg-[color-mix(in_oklab,var(--blue)_10%,transparent)]" : start >= 0 && "opacity-55")}
                         style={on ? { boxShadow: "inset 2px 0 0 var(--blue)" } : undefined}
                       >
                         {highlight(line)}
