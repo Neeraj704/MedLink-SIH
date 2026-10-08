@@ -108,11 +108,11 @@ export function Nav() {
                 <ChevronDown className="size-3.5" strokeWidth={2} aria-hidden="true" />
               </button>
             ) : null}
-            <ThemeToggle />
+            <ThemeToggle className="max-[380px]:hidden" />
             <Link href={SIGNIN_ROUTE} className="hidden px-2 text-[13px] text-ink-2 hover:text-ink sm:inline">
               Sign in
             </Link>
-            <Link href={SIGNUP_ROUTE} className={cn(btnPrimary, "px-3.5 py-1.5 text-[13px]")}>
+            <Link href={SIGNUP_ROUTE} className={cn(btnPrimary, "px-3.5 py-1.5 text-[13px] max-[380px]:hidden")}>
               Get started
             </Link>
             <button
