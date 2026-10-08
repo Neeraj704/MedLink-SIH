@@ -28,7 +28,7 @@ function Greetings({ reduceMotion }: { reduceMotion: boolean }) {
   return (
     <div className="flex h-24 items-center justify-center" aria-hidden="true">
       <AnimatePresence mode="wait">
-        <motion.span key={g.text} lang={g.lang} initial={reduceMotion ? false : { opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={reduceMotion ? undefined : { opacity: 0, y: -14 }} transition={{ duration: 0.45, ease: EASE_EXPO }} className="text-[clamp(2.5rem,7vw,4rem)] font-bold tracking-[-0.03em] text-ink">
+        <motion.span key={g.text} lang={g.lang} initial={reduceMotion ? false : { opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={reduceMotion ? undefined : { opacity: 0, y: -14 }} transition={{ duration: 0.45, ease: EASE_EXPO }} className="text-[clamp(2rem,6vw,4rem)] font-bold tracking-[-0.03em] text-ink">
           {g.text}
         </motion.span>
       </AnimatePresence>
@@ -78,9 +78,9 @@ export function Onboarding() {
   return (
     <AnimatePresence>
       {onboardingOpen ? (
-        <motion.div key="onboarding" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="fixed inset-0 z-[100] flex items-center justify-center bg-canvas/80 p-4 backdrop-blur-xl" data-lenis-prevent>
-          <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="onboarding-title" className="glass relative max-h-[92dvh] w-full max-w-[640px] overflow-y-auto rounded-[32px] p-8 md:p-12">
-            <ol className="mb-8 flex justify-center gap-2" aria-label={`Step ${onboardingStep + 1} of 4`}>
+        <motion.div key="onboarding" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="fixed inset-0 z-[100] flex items-center justify-center bg-canvas/80 p-3 backdrop-blur-xl sm:p-4" data-lenis-prevent>
+          <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="onboarding-title" className="glass relative max-h-[92dvh] w-full max-w-[640px] overflow-y-auto rounded-[24px] p-5 sm:rounded-[28px] sm:p-8 md:p-12">
+            <ol className="mb-6 flex justify-center gap-2 sm:mb-8" aria-label={`Step ${onboardingStep + 1} of 4`}>
               {[0, 1, 2, 3].map((s) => (
                 <li key={s} className={cn("h-1.5 rounded-full transition-all duration-500", s === onboardingStep ? "w-8 bg-link" : "w-1.5 bg-hairline")} />
               ))}
@@ -89,10 +89,10 @@ export function Onboarding() {
             {onboardingStep === 0 ? (
               <div className="text-center">
                 <Greetings reduceMotion={reduceMotion} />
-                <h2 id="onboarding-title" className="mt-4 text-[26px] font-semibold tracking-[-0.02em] text-ink">
+                <h2 id="onboarding-title" className="mt-4 text-[22px] font-semibold tracking-[-0.02em] text-ink sm:text-[26px]">
                   Welcome to MedLink
                 </h2>
-                <p className="mx-auto mt-3 max-w-[420px] text-[16px] text-ink-2">One diagnosis. Four vocabularies. A record every hospital can read.</p>
+                <p className="mx-auto mt-3 max-w-[420px] text-[15px] text-ink-2 sm:text-[16px]">One diagnosis. Four vocabularies. A record every hospital can read.</p>
                 <div className="mt-8 flex flex-col items-center gap-3">
                   <button type="button" data-autofocus onClick={next} className={btnPrimary}>
                     Get started
@@ -106,7 +106,7 @@ export function Onboarding() {
 
             {onboardingStep === 1 ? (
               <div>
-                <h2 id="onboarding-title" className="text-center text-[26px] font-semibold tracking-[-0.02em] text-ink">
+                <h2 id="onboarding-title" className="text-center text-[22px] font-semibold tracking-[-0.02em] text-ink sm:text-[26px]">
                   Who are you here as?
                 </h2>
                 <p className="mt-2 text-center text-[15px] text-ink-2">We&apos;ll highlight the sections that matter most to you.</p>
@@ -135,7 +135,7 @@ export function Onboarding() {
 
             {onboardingStep === 2 ? (
               <div>
-                <h2 id="onboarding-title" className="text-center text-[26px] font-semibold tracking-[-0.02em] text-ink">
+                <h2 id="onboarding-title" className="text-center text-[22px] font-semibold tracking-[-0.02em] text-ink sm:text-[26px]">
                   Make it comfortable
                 </h2>
                 <div className="mt-7 divide-y divide-hairline rounded-[20px] border border-hairline bg-canvas-alt">
@@ -167,10 +167,10 @@ export function Onboarding() {
 
             {onboardingStep === 3 ? (
               <div className="text-center">
-                <h2 id="onboarding-title" className="text-[26px] font-semibold tracking-[-0.02em] text-ink">
+                <h2 id="onboarding-title" className="text-[22px] font-semibold tracking-[-0.02em] text-ink sm:text-[26px]">
                   Want a 30-second tour?
                 </h2>
-                <p className="mx-auto mt-3 max-w-[420px] text-[16px] text-ink-2">Five stops: the translator, the pipeline, FHIR, the assistant and the portals.</p>
+                <p className="mx-auto mt-3 max-w-[420px] text-[15px] text-ink-2 sm:text-[16px]">Five stops: the translator, the pipeline, FHIR, the assistant and the portals.</p>
                 <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
                   <button type="button" data-autofocus onClick={startTour} className={btnPrimary}>
                     Take the tour
