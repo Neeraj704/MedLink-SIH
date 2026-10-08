@@ -108,7 +108,7 @@ export function Nav() {
                 <ChevronDown className="size-3.5" strokeWidth={2} aria-hidden="true" />
               </button>
             ) : null}
-            <ThemeToggle className="hidden sm:inline-flex" />
+            <ThemeToggle className="inline-flex" />
             <Link href={SIGNIN_ROUTE} className="hidden px-2 text-[13px] text-ink-2 hover:text-ink sm:inline">
               Sign in
             </Link>
@@ -137,7 +137,7 @@ export function Nav() {
             role="dialog"
             aria-modal="true"
             aria-label="Menu"
-            className="glass fixed inset-0 z-[60] flex flex-col rounded-none border-0 px-8 pb-10 pt-5"
+            className="glass fixed inset-0 z-[60] flex flex-col rounded-none border-0 px-6 pb-8 pt-5 sm:px-8 sm:pb-10"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -149,19 +149,24 @@ export function Nav() {
                 <X className="size-6" strokeWidth={1.75} />
               </button>
             </div>
-            <ul className="mt-10 flex flex-1 flex-col gap-3 overflow-y-auto" data-lenis-prevent>
+            <ul className="mt-8 flex flex-1 flex-col gap-2.5 overflow-y-auto sm:mt-10 sm:gap-3" data-lenis-prevent>
               {NAV_LINKS.map((l, i) => (
                 <motion.li key={l.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.045, duration: 0.5, ease: EASE_APPLE }}>
-                  <a href={`#${l.id}`} onClick={() => setMenuOpen(false)} className="block text-[28px] font-semibold tracking-[-0.025em] text-ink">
+                  <a href={`#${l.id}`} onClick={() => setMenuOpen(false)} className="block text-[22px] font-semibold tracking-[-0.025em] text-ink sm:text-[28px]">
                     {l.label}
                   </a>
                 </motion.li>
               ))}
             </ul>
-            <div className="mt-6 flex items-center justify-between gap-4">
-              <ThemeToggle className="size-11 border border-hairline" />
-              <Link href={SIGNUP_ROUTE} className={cn(btnPrimary, "flex-1")}>
-                Get started
+            <div className="mt-6 flex flex-col gap-3">
+              <div className="flex items-center justify-between gap-3">
+                <ThemeToggle className="size-10 border border-hairline sm:size-11" />
+                <Link href={SIGNUP_ROUTE} onClick={() => setMenuOpen(false)} className={cn(btnPrimary, "flex-1 text-center justify-center")}>
+                  Get started
+                </Link>
+              </div>
+              <Link href={SIGNIN_ROUTE} onClick={() => setMenuOpen(false)} className="text-center text-[14px] text-ink-2 hover:text-ink py-1">
+                Already have an account? <span className="font-medium text-ink underline">Sign in</span>
               </Link>
             </div>
           </motion.div>

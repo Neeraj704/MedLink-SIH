@@ -20,8 +20,8 @@ function GreetingLoop() {
   }, [reduceMotion]);
   const g = BHARAT.greetings[i];
   return (
-    <div className="flex h-28 items-center justify-center gap-4" role="img" aria-label="Greetings in Indian languages">
-      <Languages className="size-6 text-ink-3" aria-hidden="true" />
+    <div className="flex h-20 sm:h-28 items-center justify-center gap-3 sm:gap-4" role="img" aria-label="Greetings in Indian languages">
+      <Languages className="size-5 sm:size-6 text-ink-3" aria-hidden="true" />
       <AnimatePresence mode="wait">
         <motion.span
           key={g.text}
@@ -31,7 +31,7 @@ function GreetingLoop() {
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           exit={{ opacity: 0, y: -14, filter: "blur(6px)" }}
           transition={{ duration: 0.5 }}
-          className="text-gradient-vocab text-[clamp(2.5rem,7vw,5rem)] font-semibold tracking-[-0.03em]"
+          className="text-gradient-vocab text-[clamp(1.75rem,6.5vw,4.5rem)] font-semibold tracking-[-0.03em]"
         >
           {g.text}
         </motion.span>
@@ -45,15 +45,15 @@ export function BuiltForBharat() {
     <SectionShell id="bharat" tone="grey">
       <Container>
         <SectionHeader id="bharat" eyebrow="Built for Bharat" title={BHARAT.title} sub={BHARAT.sub} />
-        <div className="mt-12">
+        <div className="mt-8 sm:mt-12">
           <GreetingLoop />
         </div>
-        <Stagger className="mt-12 grid gap-4 md:grid-cols-6">
+        <Stagger className="mt-8 sm:mt-12 grid gap-3 sm:gap-4 md:grid-cols-6">
           {BHARAT.tiles.map((t, i) => {
             const Icon = ICONS[t.id];
             const feature = "feature" in t ? t.feature : undefined;
             return (
-              <StaggerItem key={t.id} className={cn("card-surface rounded-[24px] p-7", i < 2 ? "md:col-span-3" : "md:col-span-2")}>
+              <StaggerItem key={t.id} className={cn("card-surface rounded-[20px] p-5 sm:rounded-[24px] sm:p-7", i < 2 ? "md:col-span-3" : "md:col-span-2")}>
                 <div className="flex items-start justify-between gap-3">
                   <IconTile>
                     <Icon className="size-5" strokeWidth={1.75} />

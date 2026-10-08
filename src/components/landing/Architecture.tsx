@@ -45,10 +45,10 @@ export function Architecture() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
                 transition={{ duration: 0.7, delay: li * 0.06, ease: EASE_EXPO }}
-                className="relative lg:[transform:rotateX(14deg)] lg:[transform-origin:center_top]"
-                style={{ marginInline: `${li * 6}px` }}
+                className="relative lg:[transform:rotateX(14deg)] lg:[transform-origin:center_top] lg:[margin-inline:var(--layer-offset)]"
+                style={{ ["--layer-offset" as string]: `${li * 6}px` }}
               >
-                <div className="glass rounded-[24px] p-5 md:p-6">
+                <div className="glass rounded-[20px] p-4 sm:rounded-[24px] sm:p-5 md:p-6">
                   <button
                     type="button"
                     aria-expanded={isOpen}

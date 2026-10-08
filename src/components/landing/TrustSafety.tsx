@@ -70,12 +70,12 @@ export function TrustSafety() {
     <SectionShell id="trust" tone="dark">
       <Container>
         <SectionHeader id="trust" eyebrow={TRUST.eyebrow} title={TRUST.title} sub={TRUST.sub} />
-        <Stagger className="mt-16 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <Stagger className="mt-12 sm:mt-16 grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
           {cards.map(([key, c]) => {
             const Icon = ICONS[key];
             const feature = "feature" in c ? c.feature : undefined;
             return (
-              <StaggerItem key={key} className={cn("glass rounded-[24px] p-7", key === "audit" && "md:col-span-2 lg:col-span-3")}>
+              <StaggerItem key={key} className={cn("glass rounded-[20px] p-5 sm:rounded-[24px] sm:p-7", key === "audit" && "md:col-span-2 lg:col-span-3")}>
                 <div className="flex items-start justify-between gap-3">
                   <IconTile>
                     <Icon className="size-5" strokeWidth={1.75} />

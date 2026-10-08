@@ -15,10 +15,10 @@ function HybridDemo() {
   const current = SETU.hybridDemo.modes[mode];
   const ok = current.hit === 2;
   return (
-    <Glass className="p-6 md:p-8">
+    <Glass className="p-4 sm:p-6 md:p-8">
       <p className="t-mono text-ink-3">Query</p>
-      <p className="mt-1 text-[28px] font-semibold tracking-[-0.02em] text-ink">“{SETU.hybridDemo.query}”</p>
-      <div role="tablist" aria-label="Retrieval mode" className="mt-6 inline-flex rounded-full border border-hairline p-1">
+      <p className="mt-1 text-[22px] sm:text-[28px] font-semibold tracking-[-0.02em] text-ink">“{SETU.hybridDemo.query}”</p>
+      <div role="tablist" aria-label="Retrieval mode" className="mt-5 sm:mt-6 flex max-w-full overflow-x-auto no-scrollbar rounded-full border border-hairline p-1">
         {MODES.map((m) => (
           <button
             key={m}
@@ -28,7 +28,7 @@ function HybridDemo() {
             aria-selected={mode === m}
             aria-controls="hybrid-panel"
             onClick={() => setMode(m)}
-            className={cn("relative rounded-full px-4 py-1.5 text-[14px] font-medium transition-colors", mode === m ? "text-white" : "text-ink-2 hover:text-ink")}
+            className={cn("relative shrink-0 rounded-full px-3 py-1 text-[12.5px] sm:px-4 sm:py-1.5 sm:text-[14px] font-medium transition-colors", mode === m ? "text-white" : "text-ink-2 hover:text-ink")}
           >
             {mode === m ? <motion.span layoutId="hybrid-pill" className="absolute inset-0 rounded-full bg-btn" transition={{ type: "spring", stiffness: 380, damping: 32 }} /> : null}
             <span className="relative">{SETU.hybridDemo.modes[m].label}</span>

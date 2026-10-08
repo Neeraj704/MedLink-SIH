@@ -39,17 +39,17 @@ function OrbChip({
   const v = SYSTEM_VARS[system];
   return (
     <motion.div
-      className={`glass absolute flex items-center gap-2 rounded-full py-1.5 pl-2 pr-3.5 ${className}`}
+      className={`glass absolute flex items-center gap-1.5 sm:gap-2 rounded-full py-1 pl-1.5 pr-2.5 sm:py-1.5 sm:pl-2 sm:pr-3.5 whitespace-nowrap shadow-sm ${className}`}
       style={{ x, y }}
       initial={{ opacity: 0, scale: 0.85 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.9, ease: EASE_EXPO, delay }}
     >
-      <span className="size-2.5 rounded-full" style={{ background: v.fill, boxShadow: `0 0 12px ${v.fill}` }} aria-hidden="true" />
-      <span className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: v.text }}>
+      <span className="size-2 sm:size-2.5 rounded-full" style={{ background: v.fill, boxShadow: `0 0 12px ${v.fill}` }} aria-hidden="true" />
+      <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: v.text }}>
         {label}
       </span>
-      <span className="text-[14px] font-medium text-ink">{term}</span>
+      <span className="text-[12px] sm:text-[14px] font-medium text-ink">{term}</span>
     </motion.div>
   );
 }
@@ -150,7 +150,7 @@ export function Hero() {
         </motion.div>
 
         <motion.div
-          className="relative mx-auto aspect-square w-full max-w-[min(560px,92vw)] lg:max-w-[min(560px,calc(100svh-8rem))]"
+          className="relative mx-auto aspect-square w-full max-w-[min(480px,86vw)] sm:max-w-[min(560px,92vw)] lg:max-w-[min(560px,calc(100svh-8rem))]"
           style={reduce ? undefined : { scale: orbScale, y: orbY }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -161,14 +161,14 @@ export function Hero() {
             <OrbChip key={c.term} system={c.system} term={c.term} label={c.label} className={CHIP_POS[i].className} depth={CHIP_POS[i].depth} px={px} py={py} delay={1.4 + i * 0.15} />
           ))}
           <motion.div
-            className="absolute bottom-[3%] left-1/2 -translate-x-1/2"
+            className="absolute bottom-[2%] sm:bottom-[3%] left-1/2 -translate-x-1/2"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, ease: EASE_EXPO, delay: 2 }}
           >
-            <div className="flex items-center gap-2 rounded-full bg-btn py-2 pl-3 pr-4 text-white shadow-long">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-white/75">{HERO.core.label}</span>
-              <span className="text-[15px] font-semibold">{HERO.core.term}</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 rounded-full bg-btn py-1.5 pl-2.5 pr-3.5 sm:py-2 sm:pl-3 sm:pr-4 text-white shadow-long whitespace-nowrap">
+              <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.06em] text-white/75">{HERO.core.label}</span>
+              <span className="text-[13px] sm:text-[15px] font-semibold">{HERO.core.term}</span>
             </div>
           </motion.div>
         </motion.div>

@@ -74,7 +74,7 @@ function Prescriptions() {
   return (
     <>
       <PanelTitle aside={<Pill tone="blue">Sample</Pill>}>Prescription in your language</PanelTitle>
-      <div role="radiogroup" aria-label="Prescription language" className="flex flex-wrap gap-2">
+      <div role="radiogroup" aria-label="Prescription language" className="flex flex-wrap gap-1.5 sm:gap-2">
         {PRESCRIPTION_LANGS.map((l) => (
           <button
             key={l.id}
@@ -83,15 +83,15 @@ function Prescriptions() {
             aria-checked={lang === l.id}
             lang={l.lang}
             onClick={() => setLang(l.id)}
-            className={cn("rounded-full border px-4 py-1.5 text-[14px] transition-colors", lang === l.id ? "border-link bg-link/10 text-link" : "border-hairline text-ink-2 hover:text-ink")}
+            className={cn("rounded-full border px-3 py-1 text-[13px] sm:px-4 sm:py-1.5 sm:text-[14px] transition-colors", lang === l.id ? "border-link bg-link/10 text-link" : "border-hairline text-ink-2 hover:text-ink")}
           >
             {l.label}
           </button>
         ))}
       </div>
-      <div className="mt-5 rounded-2xl border border-hairline bg-canvas-alt p-5" aria-live="polite">
-        <FileText className="mb-3 size-5 text-ink-3" aria-hidden="true" />
-        <p lang={current.lang} className="text-[17px] leading-relaxed text-ink">
+      <div className="mt-4 sm:mt-5 rounded-2xl border border-hairline bg-canvas-alt p-3.5 sm:p-5" aria-live="polite">
+        <FileText className="mb-2.5 sm:mb-3 size-5 text-ink-3" aria-hidden="true" />
+        <p lang={current.lang} className="text-[15px] sm:text-[17px] leading-relaxed text-ink">
           {current.text}
         </p>
       </div>

@@ -72,7 +72,7 @@ export function PortalFrame<T extends string>({
             </button>
           ))}
         </div>
-        <div id={`${idPrefix}-panel`} role="tabpanel" aria-labelledby={`${idPrefix}-tab-${active}`} className="min-h-[460px] min-w-0 p-5 md:p-6">
+        <div id={`${idPrefix}-panel`} role="tabpanel" aria-labelledby={`${idPrefix}-tab-${active}`} className="min-h-[380px] sm:min-h-[460px] min-w-0 p-4 sm:p-5 md:p-6">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div key={active} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.35, ease: EASE_EXPO }}>
               {children}
@@ -90,8 +90,8 @@ export function PortalFrame<T extends string>({
 
 export function PanelTitle({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
   return (
-    <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-      <h3 className="text-[19px] font-semibold tracking-[-0.015em] text-ink">{children}</h3>
+    <div className="mb-4 sm:mb-5 flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+      <h3 className="text-[17px] sm:text-[19px] font-semibold tracking-[-0.015em] text-ink">{children}</h3>
       {aside}
     </div>
   );
@@ -99,9 +99,9 @@ export function PanelTitle({ children, aside }: { children: ReactNode; aside?: R
 
 export function StatTile({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="rounded-2xl border border-hairline bg-canvas-alt p-4">
-      <p className="text-[12px] text-ink-3">{label}</p>
-      <p className="mt-1 text-[26px] font-semibold tracking-[-0.02em] text-ink">{value}</p>
+    <div className="rounded-xl sm:rounded-2xl border border-hairline bg-canvas-alt p-2.5 sm:p-4">
+      <p className="text-[11px] sm:text-[12px] text-ink-3 truncate">{label}</p>
+      <p className="mt-0.5 sm:mt-1 text-[20px] sm:text-[26px] font-semibold tracking-[-0.02em] text-ink">{value}</p>
     </div>
   );
 }

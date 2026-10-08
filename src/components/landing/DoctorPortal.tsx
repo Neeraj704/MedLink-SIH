@@ -95,7 +95,7 @@ function Consultation() {
           <li key={s} className="flex-1">
             <button type="button" onClick={() => setStep(i)} aria-current={step === i ? "step" : undefined} className="w-full text-left">
               <span className={cn("block h-1 rounded-full transition-colors", i <= step ? "bg-link" : "bg-hairline")} />
-              <span className={cn("mt-2 block truncate text-[12px]", step === i ? "font-semibold text-ink" : "text-ink-3")}>{s}</span>
+              <span className={cn("mt-1.5 sm:mt-2 block truncate text-[10px] sm:text-[12px]", step === i ? "font-semibold text-ink" : "text-ink-3")}>{s}</span>
             </button>
           </li>
         ))}

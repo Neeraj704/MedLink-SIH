@@ -318,7 +318,7 @@ export function Magnetic({ children, className }: { children: ReactNode; classNa
   );
 }
 
-const BTN_BASE = "inline-flex items-center justify-center gap-2 rounded-full px-[22px] py-3 text-[17px] font-medium leading-none transition-[background-color,transform,color] duration-200 active:scale-[.98] select-none";
+const BTN_BASE = "inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 sm:px-[22px] sm:py-3 text-[15px] sm:text-[17px] font-medium leading-none transition-[background-color,transform,color] duration-200 active:scale-[.98] select-none";
 export const btnPrimary = cn(BTN_BASE, "bg-btn text-white hover:bg-btn-hover");
 export const btnSecondary = cn(BTN_BASE, "border border-hairline bg-canvas-alt text-ink hover:bg-[color-mix(in_oklab,var(--bg-alt)_80%,var(--ink)_8%)]");
 
@@ -449,7 +449,7 @@ export function ConfidenceRing({ value, color, size = 44, label }: { value: numb
   const r = (size - 6) / 2;
   const c = 2 * Math.PI * r;
   return (
-    <span className="relative inline-flex items-center justify-center" style={{ width: size, height: size }} role="img" aria-label={label ?? `${value}% confidence`}>
+    <span className="relative inline-flex shrink-0 items-center justify-center" style={{ width: size, height: size }} role="img" aria-label={label ?? `${value}% confidence`}>
       <svg width={size} height={size} className="-rotate-90" aria-hidden="true">
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--hairline)" strokeWidth={4} />
         <motion.circle

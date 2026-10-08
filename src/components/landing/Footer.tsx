@@ -30,10 +30,10 @@ export function Footer() {
   ];
 
   return (
-    <footer className="border-t border-hairline bg-canvas-alt pb-10 pt-16">
+    <footer className="border-t border-hairline bg-canvas-alt pb-10 pt-12 sm:pt-16">
       <Container wide>
-        <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]">
-          <div>
+        <div className="grid grid-cols-2 gap-8 sm:gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]">
+          <div className="col-span-2 md:col-span-1">
             <Logo />
             <p className="mt-3 max-w-[280px] text-[14px] text-ink-2">One diagnosis, four vocabularies, one FHIR record.</p>
           </div>

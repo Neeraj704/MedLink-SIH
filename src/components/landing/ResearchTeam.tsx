@@ -39,8 +39,8 @@ export function ResearchTeam() {
           ))}
         </Stagger>
 
-        <Reveal className="mx-auto mt-20 max-w-[820px]">
-          <div className="glass rounded-[28px] p-8 md:p-10">
+        <Reveal className="mx-auto mt-14 sm:mt-20 max-w-[820px]">
+          <div className="glass rounded-[20px] p-5 sm:rounded-[28px] sm:p-8 md:p-10">
             <p className="t-eyebrow text-ink-3">The team</p>
             <p className="mt-3 text-[22px] font-semibold tracking-[-0.02em] text-ink">{TEAM.university}</p>
             <p className="text-[15px] text-ink-2">

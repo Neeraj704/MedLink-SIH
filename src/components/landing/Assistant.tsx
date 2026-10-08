@@ -93,8 +93,8 @@ export function Assistant() {
     <>
       <AnimatePresence>
         {open && !hidden ? (
-          <motion.section key="panel" aria-label={ASSISTANT_COPY.title} initial={{ opacity: 0, y: 16, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 16, scale: 0.97 }} transition={{ duration: 0.35, ease: EASE_EXPO }} className="glass fixed bottom-24 right-4 z-[80] flex h-[min(560px,calc(100dvh-8rem))] w-[min(380px,calc(100vw-2rem))] origin-bottom-right flex-col overflow-hidden rounded-[24px] sm:right-6" data-lenis-prevent>
-            <header className="flex items-center justify-between border-b border-hairline px-5 py-4">
+          <motion.section key="panel" aria-label={ASSISTANT_COPY.title} initial={{ opacity: 0, y: 16, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 16, scale: 0.97 }} transition={{ duration: 0.35, ease: EASE_EXPO }} className="glass fixed bottom-[72px] right-3 sm:bottom-24 sm:right-6 z-[80] flex h-[min(540px,calc(100dvh-5.5rem))] w-[min(380px,calc(100vw-1.5rem))] origin-bottom-right flex-col overflow-hidden rounded-[20px] sm:rounded-[24px] shadow-long" data-lenis-prevent>
+            <header className="flex items-center justify-between border-b border-hairline px-4 py-3.5 sm:px-5 sm:py-4">
               <div>
                 <h2 className="text-[16px] font-semibold text-ink">{ASSISTANT_COPY.title}</h2>
                 <p className="text-[12px] text-ink-3">{online ? "Live assistant" : ASSISTANT_COPY.offline}</p>
@@ -167,8 +167,8 @@ export function Assistant() {
       </AnimatePresence>
 
       {!hidden ? (
-        <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} aria-label={open ? "Close assistant" : "Open assistant"} className="fixed bottom-4 right-4 z-[80] flex size-14 items-center justify-center rounded-full bg-btn text-white shadow-long transition-transform hover:scale-105 active:scale-95 sm:right-6">
-          {open ? <X className="size-6" aria-hidden="true" /> : <MessageCircle className="size-6" aria-hidden="true" />}
+        <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} aria-label={open ? "Close assistant" : "Open assistant"} className="fixed bottom-3.5 right-3.5 sm:bottom-4 sm:right-6 z-[80] flex size-12 sm:size-14 items-center justify-center rounded-full bg-btn text-white shadow-long transition-transform hover:scale-105 active:scale-95">
+          {open ? <X className="size-5 sm:size-6" aria-hidden="true" /> : <MessageCircle className="size-5 sm:size-6" aria-hidden="true" />}
         </button>
       ) : null}
     </>
