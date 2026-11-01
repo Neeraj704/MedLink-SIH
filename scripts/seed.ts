@@ -20,7 +20,11 @@ const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_KEY, {
 
 async function runSeed() {
   console.log("🌱 Starting MedLink Database Seeding...");
-  const client = new Client({ connectionString: DB_URL });
+  const isCloud = DB_URL.includes("supabase.co") || DB_URL.includes("supabase.com");
+  const client = new Client({
+    connectionString: DB_URL,
+    ssl: isCloud ? { rejectUnauthorized: false } : undefined,
+  });
   await client.connect();
 
   try {

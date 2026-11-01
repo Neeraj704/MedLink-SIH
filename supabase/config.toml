@@ -1,4 +1,4 @@
-project_id = "qjyionmixkvamqgplmbw"
+project_id = "jvjphkuaezsmrmszjzgl"
 
 [functions.auth-signup]
 verify_jwt = false
