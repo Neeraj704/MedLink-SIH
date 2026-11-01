@@ -22,6 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FhirViewer } from "@/components/common/FhirViewer";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DiagnosisItem {
   id: string;
@@ -66,6 +67,7 @@ interface DocumentItem {
   name: string;
   doc_type: string;
   size_bytes: number;
+  storage_path: string;
 }
 
 export default function DoctorPatientDetail() {
@@ -316,7 +318,17 @@ export default function DoctorPatientDetail() {
                     {doc.doc_type} • {(doc.size_bytes / 1024).toFixed(0)} KB
                   </span>
                 </div>
-                <Button variant="outline" size="sm" className="gap-1.5 shrink-0">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 shrink-0"
+                  onClick={() => {
+                    const url = supabase.storage
+                      .from("patient-docs")
+                      .getPublicUrl(doc.storage_path).data.publicUrl;
+                    window.open(url, "_blank");
+                  }}
+                >
                   <Eye className="w-4 h-4" /> View
                 </Button>
               </Card>

@@ -30,6 +30,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function PatientDocuments() {
   const { data: documents = [], isLoading } = useDocuments();
@@ -182,14 +183,22 @@ export default function PatientDocuments() {
             <div className="space-y-3">
               {documents.map((doc) => {
                 const isPdf = doc.name.toLowerCase().endsWith(".pdf");
-                const sharesCount = doc.document_shares?.length || 0;
+                const sharesCount = (doc.shares || []).length;
 
                 return (
                   <div
                     key={doc.id}
                     className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 border rounded-lg bg-card gap-3 hover:border-primary/30 transition-colors"
                   >
-                    <div className="flex items-center gap-3">
+                    <div
+                      className="flex items-center gap-3 cursor-pointer flex-1"
+                      onClick={() => {
+                        const url = supabase.storage
+                          .from("patient-docs")
+                          .getPublicUrl(doc.storage_path).data.publicUrl;
+                        window.open(url, "_blank");
+                      }}
+                    >
                       <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
                         {isPdf ? (
                           <FileText className="w-5 h-5" />
@@ -198,8 +207,9 @@ export default function PatientDocuments() {
                         )}
                       </div>
                       <div>
-                        <div className="font-semibold text-sm text-foreground">
+                        <div className="font-semibold text-sm text-foreground hover:text-primary transition-colors flex items-center gap-1.5">
                           {doc.name}
+                          <Eye className="w-3.5 h-3.5 text-muted-foreground opacity-60" />
                         </div>
                         <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
                           <Badge variant="secondary" className="text-[10px] h-4">
@@ -220,6 +230,21 @@ export default function PatientDocuments() {
                     </div>
 
                     <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="h-8 text-xs gap-1.5"
+                        onClick={() => {
+                          const url = supabase.storage
+                            .from("patient-docs")
+                            .getPublicUrl(doc.storage_path).data.publicUrl;
+                          window.open(url, "_blank");
+                        }}
+                      >
+                        <Eye className="w-3.5 h-3.5 text-muted-foreground" />
+                        View
+                      </Button>
+
                       <Button
                         variant="outline"
                         size="sm"
@@ -281,8 +306,8 @@ export default function PatientDocuments() {
             ) : (
               consentLinks.map((link) => {
                 const doctorId = link.doctor_id;
-                const isShared = (sharingDoc?.document_shares || []).some(
-                  (s) => s.doctor_id === doctorId
+                const isShared = (sharingDoc?.shares || sharingDoc?.document_shares || []).some(
+                  (s: { doctor_id: string }) => s.doctor_id === doctorId
                 );
 
                 return (
