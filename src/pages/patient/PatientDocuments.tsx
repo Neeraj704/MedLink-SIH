@@ -15,6 +15,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   useDocuments,
   useUploadDocument,
@@ -44,27 +45,41 @@ export default function PatientDocuments() {
   const [docType, setDocType] = useState<
     "Lab Report" | "Imaging" | "Prescription" | "Other"
   >("Lab Report");
+  const [openUploadModal, setOpenUploadModal] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [customDocName, setCustomDocName] = useState("");
 
   // Sharing modal state
   const [sharingDoc, setSharingDoc] = useState<(typeof documents)[0] | null>(
     null
   );
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const handleFileSelected = (file: File) => {
     if (file.size > 15 * 1024 * 1024) {
       toast.error("File size cannot exceed 15MB");
       return;
     }
+    setPendingFile(file);
+    const friendlyName = file.name.replace(/\.[^/.]+$/, "");
+    setCustomDocName(friendlyName);
+    setOpenUploadModal(true);
+  };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleFileSelected(file);
+  };
+
+  const handleConfirmUpload = async () => {
+    if (!pendingFile) return;
     try {
       await uploadMutation.mutateAsync({
-        file,
-        name: file.name,
-        doc_type: docType,
+        file: pendingFile,
+        name: customDocName.trim() || pendingFile.name,
+        docType: docType,
       });
+      setOpenUploadModal(false);
+      setPendingFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch {
       // Toast surfaced by mutation
@@ -138,6 +153,12 @@ export default function PatientDocuments() {
 
           <div
             onClick={() => fileInputRef.current?.click()}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => {
+              e.preventDefault();
+              const file = e.dataTransfer.files?.[0];
+              if (file) handleFileSelected(file);
+            }}
             className="border-2 border-dashed rounded-xl p-8 text-center hover:border-primary/50 transition-colors cursor-pointer bg-muted/10 hover:bg-muted/20"
           >
             <Upload className="w-10 h-10 mx-auto mb-2 text-primary opacity-60" />
@@ -145,13 +166,8 @@ export default function PatientDocuments() {
               Click or drag to upload medical reports
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Supports PDF, PNG, JPG up to 15MB &bull; Stored securely with Row Level Security
+              Supports PDF, PNG, JPG up to 15MB &bull; Custom naming & category tagging
             </p>
-            {uploadMutation.isPending && (
-              <div className="mt-3 flex items-center justify-center gap-2 text-xs text-primary font-medium">
-                <Loader2 className="w-4 h-4 animate-spin" /> Uploading document...
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
@@ -344,6 +360,104 @@ export default function PatientDocuments() {
               })
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+      {/* Upload Document Modal */}
+      <Dialog
+        open={openUploadModal}
+        onOpenChange={(open) => {
+          if (!open) {
+            setOpenUploadModal(false);
+            setPendingFile(null);
+            if (fileInputRef.current) fileInputRef.current.value = "";
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <Upload className="w-4 h-4 text-primary" /> Upload Medical Record
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              Name your medical record and select a category for structured organization.
+            </DialogDescription>
+          </DialogHeader>
+
+          {pendingFile && (
+            <div className="space-y-4 pt-2">
+              <div className="flex items-center gap-2.5 p-3 rounded-lg bg-muted/40 border text-xs">
+                <FileText className="w-4 h-4 text-primary shrink-0" />
+                <div className="truncate flex-1">
+                  <span className="font-mono block truncate font-medium">{pendingFile.name}</span>
+                  <span className="text-[11px] text-muted-foreground">
+                    {(pendingFile.size / 1024).toFixed(0)} KB &bull; {pendingFile.type || "Document"}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-foreground block mb-1">
+                  Document Title / Display Name
+                </label>
+                <Input
+                  placeholder="e.g. CBC Blood Test Report"
+                  value={customDocName}
+                  onChange={(e) => setCustomDocName(e.target.value)}
+                  className="text-sm"
+                  autoFocus
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-foreground block mb-1.5">
+                  Category
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(["Lab Report", "Imaging", "Prescription", "Other"] as const).map(
+                    (t) => (
+                      <Button
+                        key={t}
+                        type="button"
+                        variant={docType === t ? "default" : "outline"}
+                        size="sm"
+                        className="text-xs justify-start h-8"
+                        onClick={() => setDocType(t)}
+                      >
+                        {t}
+                      </Button>
+                    )
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 text-xs"
+                  onClick={() => setOpenUploadModal(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  className="flex-1 text-xs gap-1.5"
+                  disabled={uploadMutation.isPending || !customDocName.trim()}
+                  onClick={handleConfirmUpload}
+                >
+                  {uploadMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-3.5 h-3.5" /> Save & Upload
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
