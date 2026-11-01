@@ -124,7 +124,7 @@ export function usePatient(patientId?: string) {
         .select(`
           *,
           patient_identifiers(*),
-          consultations(
+          consultations:consultations!consultations_patient_id_fkey(
             id,
             status,
             started_at,
@@ -134,7 +134,7 @@ export function usePatient(patientId?: string) {
             consultation_diagnoses(*, disease:disease_mappings(*)),
             medications(*)
           ),
-          documents(*)
+          documents:documents!documents_patient_id_fkey(*)
         `)
         .eq("id", patientId!)
         .single();
