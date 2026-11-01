@@ -74,6 +74,9 @@ export default function DoctorDashboard() {
         setChallengeId(res.challenge_id);
         setLinkStep("otp");
         toast.info("Consent verification OTP dispatched to patient");
+      } else if (res.already_linked) {
+        toast.info(res.message || "This patient is already linked with active consent!");
+        setOpenLinkModal(false);
       }
     } catch {
       // Toast already surfaced by hook
@@ -256,8 +259,20 @@ export default function DoctorDashboard() {
                       setLinkId(val);
                     }}
                   />
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    Try seeded patient Priya Sharma:{" "}
+                  <p className="text-[11px] text-muted-foreground mt-1 flex flex-wrap gap-1 items-center">
+                    <span>Try unlinked patient Aarav Sharma:</span>
+                    <button
+                      type="button"
+                      className="font-mono text-primary underline"
+                      onClick={() => {
+                        setLinkMethod("abha");
+                        setLinkId("91-9988-7766-5544");
+                      }}
+                    >
+                      91-9988-7766-5544
+                    </button>
+                    <span className="text-muted-foreground/60">|</span>
+                    <span>Priya:</span>
                     <button
                       type="button"
                       className="font-mono text-primary underline"

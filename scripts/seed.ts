@@ -287,6 +287,18 @@ async function runSeed() {
         gender: "female",
         blood_group: "AB+",
       },
+      {
+        id: "00000000-0000-0000-0002-000000000005",
+        name: "Aarav Sharma",
+        mobile: "9876543211",
+        abha: "91998877665544",
+        abha_formatted: "91-9988-7766-5544",
+        abha_addr: "aaravsharma@abdm",
+        lang: "English",
+        dob: "1997-06-15",
+        gender: "male",
+        blood_group: "O+",
+      },
     ];
 
     for (const pat of patients) {
@@ -363,7 +375,7 @@ async function runSeed() {
     const drRaoId = doctors[0].id;
     const drMehtaId = doctors[1].id;
 
-    for (const pat of patients) {
+    for (const pat of patients.slice(0, 4)) {
       await client.query(
         `INSERT INTO public.doctor_patient_links (doctor_id, patient_id, status, linked_at)
          VALUES ($1, $2, 'active', now() - interval '30 days')
