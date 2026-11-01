@@ -51,7 +51,7 @@ export function SignInForm({ initialRole }: { initialRole: AuthRole }) {
     if (error) setError(undefined);
   };
 
-  const onSubmit = (e: FormEvent) => {
+  const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const problem = validateIdentifier(role, identifier);
     setError(problem);
@@ -59,12 +59,14 @@ export function SignInForm({ initialRole }: { initialRole: AuthRole }) {
       requestAnimationFrame(() => formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus());
       return;
     }
-    login(role, detection.method, detection.formatted || identifier);
     setSending(true);
-    timer.current = setTimeout(() => {
-      setSending(false);
-      setStep("verify");
-    }, 700);
+    const res = await login(role, detection.method, detection.formatted || identifier);
+    setSending(false);
+    if (!res.success) {
+      setError(res.error || "Authentication request failed");
+      return;
+    }
+    setStep("verify");
   };
 
   const config = ROLE_CONFIG[role];
@@ -129,7 +131,13 @@ export function SignInForm({ initialRole }: { initialRole: AuthRole }) {
         </motion.div>
       ) : (
         <motion.div key="verify" {...stepMotion}>
-          <VerifyStep role={role} masked={maskId(identifier)} mode="signin" onBack={() => setStep("form")} />
+          <VerifyStep
+            role={role}
+            masked={maskId(identifier)}
+            mode="signin"
+            onBack={() => setStep("form")}
+            onResend={() => login(role, detection.method, detection.formatted || identifier)}
+          />
         </motion.div>
       )}
     </AnimatePresence>

@@ -11,6 +11,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { NotificationBell } from '@/components/common/NotificationBell';
 
 const patientNav = [
   { path: '/patient', icon: Home, label: 'Dashboard' },
@@ -108,10 +109,7 @@ export default function PatientLayout() {
           <button onClick={toggle} className="p-2 rounded-lg hover:bg-muted">
             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
-          <button className="p-2 rounded-lg hover:bg-muted relative">
-            <Bell className="w-4 h-4" />
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary" />
-          </button>
+          <NotificationBell />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-muted">

@@ -95,7 +95,7 @@ export function SignUpForm({ initialRole }: { initialRole: AuthRole }) {
     clear("identifier");
   };
 
-  const onSubmit = (e: FormEvent) => {
+  const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const next: Errors = {};
     if (!isNameValid) next.name = "Enter your full name.";
@@ -108,12 +108,22 @@ export function SignUpForm({ initialRole }: { initialRole: AuthRole }) {
       requestAnimationFrame(() => formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus());
       return;
     }
-    login(role, role === "doctor" ? "hpr" : (idDetection.method || "abha"), rawMobileDigits || identifier, name);
     setSending(true);
-    timer.current = setTimeout(() => {
-      setSending(false);
-      setStep("verify");
-    }, 700);
+    const res = await login(
+      role,
+      role === "doctor" ? "hpr" : (idDetection.method || "abha"),
+      rawMobileDigits,
+      name,
+      language,
+      consent,
+      true
+    );
+    setSending(false);
+    if (!res.success) {
+      setErrors({ ...next, mobile: res.error || "Signup request failed" });
+      return;
+    }
+    setStep("verify");
   };
 
   const config = ROLE_CONFIG[role];
@@ -227,7 +237,23 @@ export function SignUpForm({ initialRole }: { initialRole: AuthRole }) {
       ) : (
         <motion.div key="verify" {...stepMotion}>
           <Stepper step={2} />
-          <VerifyStep role={role} masked={maskId(rawMobileDigits || identifier)} mode="signup" onBack={() => setStep("details")} />
+          <VerifyStep
+            role={role}
+            masked={maskId(rawMobileDigits || identifier)}
+            mode="signup"
+            onBack={() => setStep("details")}
+            onResend={() =>
+              login(
+                role,
+                role === "doctor" ? "hpr" : (idDetection.method || "abha"),
+                rawMobileDigits,
+                name,
+                language,
+                consent,
+                true
+              )
+            }
+          />
         </motion.div>
       )}
     </AnimatePresence>

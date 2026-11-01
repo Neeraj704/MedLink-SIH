@@ -4,15 +4,16 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useState, useEffect } from 'react';
 import {
   Activity, Users, Calendar, Code2, FileText, Settings, User,
-  Sun, Moon, Bell, ChevronRight, LogOut, Menu, X, Search, Home
+  Sun, Moon, ChevronRight, LogOut, Menu, Search, Home
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { NotificationBell } from '@/components/common/NotificationBell';
+import { useLinkedPatients } from '@/hooks/data/usePatients';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 const doctorNav = [
   { path: '/doctor', icon: Home, label: 'Dashboard' },
@@ -33,7 +34,21 @@ export default function DoctorLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
-  useEffect(() => { setSidebarOpen(false); }, [location.pathname]);
+  // Search patients state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const { data: patients = [] } = useLinkedPatients();
+
+  const searchResults = searchQuery.trim().length >= 2
+    ? patients.filter(p => {
+        const q = searchQuery.toLowerCase();
+        return p.full_name.toLowerCase().includes(q) ||
+          (p.mobile && p.mobile.includes(q)) ||
+          (p.abha_number && p.abha_number.includes(q));
+      })
+    : [];
+
+  useEffect(() => { setSidebarOpen(false); setSearchOpen(false); }, [location.pathname]);
 
   const breadcrumbs = () => {
     const parts = location.pathname.split('/').filter(Boolean);
@@ -43,7 +58,10 @@ export default function DoctorLayout() {
     }));
   };
 
-  const handleLogout = () => { logout(); navigate('/'); };
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
 
   return (
     <div className="min-h-screen flex bg-background">
@@ -119,19 +137,48 @@ export default function DoctorLayout() {
 
           <div className="flex-1" />
 
-          <div className="hidden md:flex items-center relative w-64">
-            <Search className="w-4 h-4 absolute left-3 text-muted-foreground" />
-            <Input placeholder="Search patients..." className="pl-9 h-9 bg-muted/50 border-0" />
+          {/* Patient Quick Search with Popover */}
+          <div className="hidden md:block relative w-72">
+            <Popover open={searchOpen && searchResults.length > 0} onOpenChange={setSearchOpen}>
+              <PopoverTrigger asChild>
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3 top-2.5 text-muted-foreground" />
+                  <Input
+                    placeholder="Search linked patients..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setSearchOpen(true);
+                    }}
+                    onFocus={() => setSearchOpen(true)}
+                    className="pl-9 h-9 bg-muted/50 border-0"
+                  />
+                </div>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-72 p-1 max-h-60 overflow-y-auto">
+                {searchResults.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => {
+                      navigate(`/doctor/patients/${p.id}`);
+                      setSearchOpen(false);
+                      setSearchQuery('');
+                    }}
+                    className="w-full text-left p-2 rounded hover:bg-muted text-sm flex flex-col"
+                  >
+                    <span className="font-medium text-foreground">{p.full_name}</span>
+                    <span className="text-xs text-muted-foreground">{p.abha_number || p.mobile}</span>
+                  </button>
+                ))}
+              </PopoverContent>
+            </Popover>
           </div>
 
-          <button onClick={toggle} className="p-2 rounded-lg hover:bg-muted transition-colors">
+          <button onClick={toggle} className="p-2 rounded-lg hover:bg-muted transition-colors" aria-label="Toggle theme">
             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
 
-          <button className="p-2 rounded-lg hover:bg-muted relative">
-            <Bell className="w-4 h-4" />
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary" />
-          </button>
+          <NotificationBell />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

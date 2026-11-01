@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Skeleton } from "@/components/ui/skeleton";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 
@@ -14,6 +15,7 @@ import NotFound from "./pages/NotFound";
 import DoctorLayout from "./layouts/DoctorLayout";
 import DoctorDashboard from "./pages/doctor/DoctorDashboard";
 import DoctorPatients from "./pages/doctor/DoctorPatients";
+import DoctorPatientDetail from "./pages/doctor/DoctorPatientDetail";
 import ConsultationDesk from "./pages/doctor/ConsultationDesk";
 import CodeTranslation from "./pages/doctor/CodeTranslation";
 import DoctorAppointments from "./pages/doctor/DoctorAppointments";
@@ -33,7 +35,18 @@ import PatientProfile from "./pages/patient/PatientProfile";
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode; requiredRole: 'doctor' | 'patient' }) {
-  const { isAuthenticated, role } = useAuth();
+  const { isAuthenticated, role, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center p-8 bg-background">
+        <div className="space-y-4 w-full max-w-md">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-8 w-3/4" />
+        </div>
+      </div>
+    );
+  }
   if (!isAuthenticated) return <Navigate to="/signin" replace />;
   if (role !== requiredRole) return <Navigate to="/" replace />;
   return <>{children}</>;
@@ -50,6 +63,7 @@ function AppRoutes() {
       <Route path="/doctor" element={<ProtectedRoute requiredRole="doctor"><DoctorLayout /></ProtectedRoute>}>
         <Route index element={<DoctorDashboard />} />
         <Route path="patients" element={<DoctorPatients />} />
+        <Route path="patients/:id" element={<DoctorPatientDetail />} />
         <Route path="consultation" element={<ConsultationDesk />} />
         <Route path="code-translation" element={<CodeTranslation />} />
         <Route path="appointments" element={<DoctorAppointments />} />

@@ -31,11 +31,13 @@ export function VerifyStep({
   masked,
   mode,
   onBack,
+  onResend,
 }: {
   role: AuthRole;
   masked: string;
   mode: "signin" | "signup";
   onBack: () => void;
+  onResend?: () => Promise<unknown> | unknown;
 }) {
   const navigate = useNavigate();
   const { verifyOtp } = useAuth();
@@ -66,21 +68,26 @@ export function VerifyStep({
     }
   }, [status, dashboardTarget, navigate]);
 
-  const verify = (code: string) => {
+  const verify = async (code: string) => {
     if (status !== "idle" || code.length !== 6) return;
     setError("");
     setStatus("checking");
-    timer.current = setTimeout(() => {
-      if (code === DEMO_OTP) {
-        verifyOtp(DEMO_OTP, role);
+    try {
+      const res = await verifyOtp(code, role);
+      if (res.success) {
         setStatus("success");
-        return;
+      } else {
+        setStatus("idle");
+        setOtp("");
+        setShake((n) => n + 1);
+        setError(res.error || `That code didn't match. For this prototype, use ${DEMO_OTP}.`);
       }
+    } catch (err: unknown) {
       setStatus("idle");
       setOtp("");
       setShake((n) => n + 1);
-      setError(`That code didn't match. For this prototype, use ${DEMO_OTP}.`);
-    }, 650);
+      setError(err instanceof Error ? err.message : "Verification error occurred");
+    }
   };
 
   const onSubmit = (e: FormEvent) => {
@@ -88,11 +95,18 @@ export function VerifyStep({
     verify(otp);
   };
 
-  const resend = () => {
+  const resend = async () => {
     setSeconds(RESEND_SECONDS);
     setOtp("");
     setError("");
     setResent(true);
+    if (onResend) {
+      try {
+        await onResend();
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to resend code");
+      }
+    }
   };
 
   if (status === "success") {

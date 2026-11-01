@@ -1,277 +1,203 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Code2, Copy, Check, Send } from "lucide-react";
+import {
+  Code2,
+  Copy,
+  Check,
+  Send,
+  Loader2,
+  Eye,
+  Download,
+  ShieldCheck,
+  FileCheck2,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  useFhirBundles,
+  useTogglePublishBundle,
+  type StoredFhirBundle,
+} from "@/hooks/data/useFhirBundles";
+import { FhirViewer } from "@/components/common/FhirViewer";
 import { toast } from "sonner";
 
-const sampleFhir = {
-  resourceType: "Bundle",
-  type: "collection",
-  timestamp: new Date().toISOString(),
-  entry: [
-    {
-      resource: {
-        resourceType: "Patient",
-        id: "pat-001",
-        name: [{ use: "official", family: "Kumar", given: ["Rahul"] }],
-        identifier: [
-          { system: "https://abha.abdm.gov.in", value: "ABHA-1234-5678" },
-        ],
-        gender: "male",
-        birthDate: "1990-05-15",
-      },
-    },
-    {
-      resource: {
-        resourceType: "Condition",
-        id: "cond-001",
-        code: {
-          coding: [
-            {
-              system: "http://id.who.int/icd/release/11",
-              code: "1A3Z",
-              display: "Gastroenteritis",
-            },
-            {
-              system: "https://ayush.gov.in/namc/ayurveda",
-              display: "Grahani",
-            },
-            { system: "https://ayush.gov.in/namc/siddha", display: "Kirani" },
-            { system: "https://ayush.gov.in/numc/unani", display: "Ishaal" },
-          ],
-        },
-        subject: { reference: "Patient/pat-001" },
-        recordedDate: new Date().toISOString().split("T")[0],
-      },
-    },
-    {
-      resource: {
-        resourceType: "Observation",
-        id: "obs-bp",
-        code: {
-          coding: [
-            {
-              system: "http://loinc.org",
-              code: "85354-9",
-              display: "Blood pressure",
-            },
-          ],
-        },
-        component: [
-          {
-            code: {
-              coding: [
-                {
-                  system: "http://loinc.org",
-                  code: "8480-6",
-                  display: "Systolic",
-                },
-              ],
-            },
-            valueQuantity: { value: 120, unit: "mmHg" },
-          },
-          {
-            code: {
-              coding: [
-                {
-                  system: "http://loinc.org",
-                  code: "8462-4",
-                  display: "Diastolic",
-                },
-              ],
-            },
-            valueQuantity: { value: 80, unit: "mmHg" },
-          },
-        ],
-        subject: { reference: "Patient/pat-001" },
-        effectiveDateTime: new Date().toISOString(),
-      },
-    },
-  ],
-};
-
 export default function FhirRecords() {
-  const [copied, setCopied] = useState(false);
-  const [published, setPublished] = useState(false);
+  const { data: bundles = [], isLoading } = useFhirBundles();
+  const togglePublish = useTogglePublishBundle();
 
-  const fhirJson = JSON.stringify(sampleFhir, null, 2);
+  const [selectedBundle, setSelectedBundle] = useState<StoredFhirBundle | null>(
+    null
+  );
+  const [viewerOpen, setViewerOpen] = useState(false);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(fhirJson);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-    toast.success("FHIR JSON copied to clipboard");
+  const handleOpenViewer = (b: StoredFhirBundle) => {
+    setSelectedBundle(b);
+    setViewerOpen(true);
   };
 
-  const handlePublish = () => {
-    setPublished(true);
-    toast.success("FHIR record published to patient portal");
+  const handleToggle = async (b: StoredFhirBundle) => {
+    try {
+      await togglePublish.mutateAsync({
+        id: b.id,
+        published: !b.published,
+      });
+    } catch {
+      // Toast surfaced by mutation
+    }
   };
-
-  const records = [
-    {
-      id: "REC-001",
-      patient: "Walter White",
-      date: "2026-04-09",
-      type: "Condition",
-      status: "Published",
-    },
-    {
-      id: "REC-002",
-      patient: "Walter White",
-      date: "2026-04-08",
-      type: "Observation",
-      status: "Draft",
-    },
-    {
-      id: "REC-003",
-      patient: "Amit Verma",
-      date: "2026-04-07",
-      type: "Bundle",
-      status: "Published",
-    },
-  ];
 
   return (
     <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <h1 className="text-2xl font-bold">FHIR Records</h1>
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold">HL7 FHIR R4 Records Registry</h1>
+          <Badge className="bg-primary/10 text-primary border-0 text-xs">
+            ABDM Milestone 2 Compliant
+          </Badge>
+        </div>
         <p className="text-muted-foreground text-sm mt-1">
-          Generate, preview, and publish HL7 FHIR-compliant records
+          Inspect, validate, and publish HL7 FHIR R4 Bundles containing dual-coded
+          AYUSH and ICD-11 conditions
         </p>
       </motion.div>
 
-      {/* Generate action */}
+      {/* Top Info Banner */}
       <Card className="doctor-blue-glow border-primary/20">
-        <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h3 className="font-semibold text-lg">Generate FHIR Resource</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Create an HL7 FHIR R4 Bundle from the current consultation data
-              </p>
+        <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-primary" />
+              <h3 className="font-semibold text-base">Standardized FHIR R4 Engine</h3>
             </div>
-            <div className="flex gap-3">
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Code2 className="w-4 h-4 mr-2" /> Preview FHIR JSON
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
-                  <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                      <Code2 className="w-5 h-5 text-primary" />
-                      FHIR Bundle Preview
-                      <Badge variant="secondary" className="text-xs">
-                        R4
-                      </Badge>
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className="relative flex-1 overflow-hidden">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleCopy}
-                      className="absolute top-2 right-2 z-10"
-                    >
-                      {copied ? (
-                        <Check className="w-4 h-4 text-success" />
-                      ) : (
-                        <Copy className="w-4 h-4" />
-                      )}
-                    </Button>
-                    <pre className="bg-muted p-4 rounded-lg overflow-auto max-h-[55vh] text-xs font-mono leading-relaxed">
-                      <code>{fhirJson}</code>
-                    </pre>
-                  </div>
-                  <div className="flex gap-3 justify-end pt-2">
-                    <Button variant="outline" onClick={handleCopy}>
-                      {copied ? (
-                        <>
-                          <Check className="w-4 h-4 mr-2" /> Copied
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-4 h-4 mr-2" /> Copy JSON
-                        </>
-                      )}
-                    </Button>
-                    <Button onClick={handlePublish} disabled={published}>
-                      <Send className="w-4 h-4 mr-2" />{" "}
-                      {published ? "Published" : "Publish to Portal"}
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
+            <p className="text-xs text-muted-foreground mt-1 max-w-xl">
+              Every published consultation compiles into a valid FHIR R4 Bundle
+              including Practitioner, Patient, Encounter, Observation, dual-coded
+              Condition, and MedicationRequest resources.
+            </p>
           </div>
+          <Button asChild size="sm" className="gap-2 shrink-0">
+            <Link to="/doctor/consultation">
+              <Code2 className="w-4 h-4" /> Start New Consultation
+            </Link>
+          </Button>
         </CardContent>
       </Card>
 
-      {/* Records table */}
+      {/* Stored Bundles List */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Record History</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <FileCheck2 className="w-5 h-5 text-primary" />
+              Published & Draft Bundles
+              <Badge variant="outline" className="text-xs ml-1">
+                {bundles.length} bundles
+              </Badge>
+            </CardTitle>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-muted-foreground">
-                  <th className="text-left py-3 font-medium">Record ID</th>
-                  <th className="text-left py-3 font-medium">Patient</th>
-                  <th className="text-left py-3 font-medium hidden sm:table-cell">
-                    Date
-                  </th>
-                  <th className="text-left py-3 font-medium hidden sm:table-cell">
-                    Type
-                  </th>
-                  <th className="text-left py-3 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {records.map((r) => (
-                  <tr
-                    key={r.id}
-                    className="border-b last:border-0 hover:bg-muted/50 transition-colors"
-                  >
-                    <td className="py-3 font-mono text-xs">{r.id}</td>
-                    <td className="py-3 font-medium">{r.patient}</td>
-                    <td className="py-3 text-muted-foreground hidden sm:table-cell">
-                      {r.date}
-                    </td>
-                    <td className="py-3 hidden sm:table-cell">
-                      <Badge variant="outline">{r.type}</Badge>
-                    </td>
-                    <td className="py-3">
-                      <Badge
-                        variant={
-                          r.status === "Published" ? "default" : "secondary"
-                        }
-                      >
-                        {r.status}
-                      </Badge>
-                    </td>
+          {isLoading ? (
+            <div className="py-12 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin text-primary" /> Loading FHIR bundles...
+            </div>
+          ) : bundles.length === 0 ? (
+            <div className="py-12 text-center text-sm text-muted-foreground space-y-2">
+              <Code2 className="w-8 h-8 mx-auto text-muted-foreground/60" />
+              <div className="font-semibold">No FHIR Bundles recorded yet</div>
+              <p className="text-xs">
+                Publish a consultation from the Consultation Desk to generate an official HL7 FHIR R4 Bundle.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-muted-foreground text-xs font-semibold">
+                    <th className="text-left py-3">Bundle ID</th>
+                    <th className="text-left py-3">Patient</th>
+                    <th className="text-left py-3 hidden sm:table-cell">ABHA</th>
+                    <th className="text-left py-3 hidden md:table-cell">Created</th>
+                    <th className="text-left py-3">Status</th>
+                    <th className="text-right py-3">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {bundles.map((b) => (
+                    <tr
+                      key={b.id}
+                      className="border-b last:border-0 hover:bg-muted/50 transition-colors"
+                    >
+                      <td className="py-3 font-mono text-xs text-foreground">
+                        {b.id.slice(0, 8)}...
+                      </td>
+                      <td className="py-3 font-medium text-xs">
+                        {b.consultation?.patient?.full_name || "Patient"}
+                      </td>
+                      <td className="py-3 text-xs font-mono text-muted-foreground hidden sm:table-cell">
+                        {b.consultation?.patient?.abha_number || "Consented"}
+                      </td>
+                      <td className="py-3 text-xs text-muted-foreground hidden md:table-cell">
+                        {new Date(b.created_at).toLocaleDateString([], {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </td>
+                      <td className="py-3">
+                        <Badge
+                          variant={b.published ? "default" : "secondary"}
+                          className="text-[10px]"
+                        >
+                          {b.published ? "PUBLISHED" : "DRAFT"}
+                        </Badge>
+                      </td>
+                      <td className="py-3 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs gap-1"
+                            onClick={() => handleOpenViewer(b)}
+                          >
+                            <Eye className="w-3.5 h-3.5" /> View JSON
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={`h-7 text-xs ${
+                              b.published
+                                ? "text-muted-foreground hover:text-destructive"
+                                : "text-primary hover:text-primary"
+                            }`}
+                            onClick={() => handleToggle(b)}
+                            disabled={togglePublish.isPending}
+                          >
+                            {b.published ? "Unpublish" : "Publish"}
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      {/* Viewer Dialog */}
+      {selectedBundle && (
+        <FhirViewer
+          open={viewerOpen}
+          onOpenChange={setViewerOpen}
+          bundle={selectedBundle.bundle}
+          validation={selectedBundle.validation}
+          title={`HL7 FHIR R4 Bundle • ${selectedBundle.id.slice(0, 8)}`}
+        />
+      )}
     </div>
   );
 }
