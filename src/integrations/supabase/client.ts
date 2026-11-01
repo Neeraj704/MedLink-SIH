@@ -13,5 +13,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
+    // Custom lock bypasses browser navigator.locks contention and LockAcquireTimeoutError
+    lock: async (_name, _acquireTimeout, fn) => await fn(),
   }
 });
